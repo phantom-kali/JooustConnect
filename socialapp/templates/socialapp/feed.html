@@ -1,0 +1,227 @@
+{% extends 'socialapp/base.html' %}
+
+{% block extra_css %}
+<style>
+    .sticky-sidebar {
+        position: sticky;
+        top: 80px;
+    }
+
+    .expanded-view {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.95);
+        overflow-y: auto;
+        z-index: 1000;
+        padding: 20px;
+    }
+
+    .expanded-view .card-body {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .close-button {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Feed</h2>
+    <div class="row">
+        <div class="col-md-8">
+            {% for post in posts %}
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center">
+                    {% if post.user.profile_picture %}
+                    <img src="{{ post.user.profile_picture.url }}" alt="{{ post.user.username }}"
+                        class="rounded-circle mr-3" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://via.placeholder.com/40" alt="{{ post.user.username }}"
+                        class="rounded-circle mr-3">
+                    {% endif %}
+                    <h5 class="mb-0 ml-2">{{ post.user.username }}</h5>
+                    <small class="text-muted ml-auto">{{ post.created_at|date:"F d, Y H:i" }}</small>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ post.content }}</p>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-outline-primary like-button" data-post-id="{{ post.id }}">
+                        Like (<span class="likes-count">{{ post.n_likes }}</span>)
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary comment-button" data-post-id="{{ post.id }}">
+                        Comment (<span class="comments-count">{{ post.n_comments }}</span>)
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary comment-button">
+                        Views (<span class="views-count">{{ post.n_views }}</span>)
+                    </button>
+                </div>
+                <div class="comment-section {% if post.n_comments >= 4 %}expanded-view{% endif %}"
+                    style="display: none;">
+                    <button class="close-button">&times;</button>
+                    <div class="card-body">
+                        <form class="comment-form" data-post-id="{{ post.id }}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <textarea class="form-control" name="content" rows="2"
+                                    placeholder="Write a comment..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                        </form>
+                        <div class="comments-list mt-3">
+                            {% for comment in post.comments.all %}
+                            <div class="comment">
+                                <p><strong>{{ comment.user.username }}:</strong> {{ comment.content }}</p>
+                                <small class="text-muted">{{ comment.created_at|date:"F d, Y H:i" }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="alert alert-info">No posts yet. Be the first to post!</div>
+            {% endfor %}
+        </div>
+        <div class="col-md-4">
+            <div class="sticky-sidebar">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Create a Post</h5>
+                        <form method="post" action="{% url 'create_post' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <textarea class="form-control" name="content" rows="3"
+                                    placeholder="What's on your mind?"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Post</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM fully loaded and parsed');
+        
+        // Like button functionality
+        document.querySelectorAll('.like-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const postId = this.dataset.postId;
+                fetch(`/post/${postId}/like/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.querySelector('.likes-count').textContent = data.n_likes;
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        });
+
+        // Comment button functionality
+        document.querySelectorAll('.comment-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const postId = this.dataset.postId;
+                const commentSection = this.closest('.card').querySelector('.comment-section');
+                const commentsCount = parseInt(this.querySelector('.comments-count').textContent);
+
+                if (commentsCount >= 4) {
+                    commentSection.classList.add('expanded-view');
+                } else {
+                    commentSection.classList.remove('expanded-view');
+                }
+
+                commentSection.style.display = commentSection.style.display === 'none' ? 'block' : 'none';
+            });
+        });
+
+        // Close button functionality
+        document.querySelectorAll('.close-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const commentSection = this.closest('.comment-section');
+                commentSection.style.display = 'none';
+            });
+        });
+
+        // Update comment form functionality
+        document.querySelectorAll('.comment-form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const postId = this.dataset.postId;
+                const content = this.querySelector('textarea[name="content"]').value;
+
+                fetch(`/post/${postId}/comment/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `content=${encodeURIComponent(content)}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const commentsList = this.closest('.card').querySelector('.comments-list');
+                            const newComment = document.createElement('div');
+                            newComment.className = 'comment';
+                            newComment.innerHTML = `
+                                <p><strong>${data.comment.user}:</strong> ${data.comment.content}</p>
+                                <small class="text-muted">${data.comment.created_at}</small>
+                            `;
+                            commentsList.prepend(newComment);
+                            this.reset();
+                            const commentsCountElement = this.closest('.card').querySelector('.comments-count');
+                            commentsCountElement.textContent = data.n_comments;
+
+                            // Check if we need to switch to expanded view
+                            if (data.n_comments >= 4) {
+                                this.closest('.comment-section').classList.add('expanded-view');
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        });
+
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}

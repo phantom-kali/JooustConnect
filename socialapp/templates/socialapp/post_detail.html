@@ -1,0 +1,95 @@
+<h1>{{ post.content }}</h1>
+<p>Views: {{ post.n_views }}</p>
+<p>Likes: <span id="likes-count">{{ post.n_likes }}</span></p>
+<button id="like-button" data-post-id="{{ post.id }}">
+    {% if request.user in post.likes.all %}Unlike{% else %}Like{% endif %}
+</button>
+
+<h2>Comments ({{ post.n_comments }})</h2>
+<div id="comments-list">
+    {% for comment in comments %}
+    <div>
+        <p>{{ comment.user.username }}: {{ comment.content }}</p>
+        <small>{{ comment.created_at }}</small>
+    </div>
+    {% endfor %}
+</div>
+
+<form id="comment-form" data-post-id="{{ post.id }}">
+    {% csrf_token %}
+    <textarea name="content" required></textarea>
+    <button type="submit">Add Comment</button>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const likeButton = document.getElementById('like-button');
+        const commentForm = document.getElementById('comment-form');
+
+        if (likeButton) {
+            likeButton.addEventListener('click', function () {
+                const postId = this.dataset.postId;
+                fetch(`/post/${postId}/like/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('likes-count').textContent = data.n_likes;
+                        this.textContent = data.liked ? 'Unlike' : 'Like';
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        }
+
+        if (commentForm) {
+            commentForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const postId = this.dataset.postId;
+                const content = this.querySelector('textarea[name="content"]').value;
+
+                fetch(`/post/${postId}/comment/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `content=${encodeURIComponent(content)}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const commentsList = document.getElementById('comments-list');
+                            const newComment = document.createElement('div');
+                            newComment.innerHTML = `
+                        <p>${data.comment.user}: ${data.comment.content}</p>
+                        <small>${data.comment.created_at}</small>
+                    `;
+                            commentsList.prepend(newComment);
+                            this.reset();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+        }
+
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
