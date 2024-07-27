@@ -2,7 +2,7 @@ from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import User, Post, Group, Message, Notification, Comment
+from .models import User, Post, Group, Message, Notification, Comment, PostView
 from .forms import UserRegistrationForm, PostForm, UserSettingsForm
 from django.contrib.auth import login, get_user_model
 from django.db.models import Q
@@ -28,18 +28,18 @@ def register(request):
 @login_required
 def feed(request):
     posts = Post.objects.all().order_by('-created_at')
-    for post in posts:
-        post.n_views += 1
-        post.save()
     return render(request, 'socialapp/feed.html', {'posts': posts})
 
 @login_required
-def post_detail(request, post_id):
+def increment_view_count(request, post_id):
     post = get_object_or_404(Post, id=post_id)
-    post.n_views += 1
-    post.save()
-    comments = post.comments.all().order_by('-created_at')
-    return render(request, 'socialapp/post_detail.html', {'post': post, 'comments': comments})
+    
+    if not PostView.objects.filter(post=post, user=request.user).exists():
+        post.n_views += 1
+        post.save()
+        PostView.objects.create(post=post, user=request.user)
+    
+    return JsonResponse({'n_views': post.n_views})
 
 @login_required
 @require_POST
@@ -98,13 +98,13 @@ def messages(request):
     
     return render(request, 'socialapp/messages.html', {'users': users})
 
+
 @login_required
 def search_users(request):
     query = request.GET.get('query', '')
-    users = get_user_model().objects.filter(
-        Q(username__icontains=query) | Q(email__icontains=query)
-    ).exclude(id=request.user.id)[:10]  # Limit to 10 results
-    return JsonResponse({'users': list(users.values('id', 'username', 'profile_picture'))})
+    users = User.objects.filter(username__icontains=query).distinct()
+    user_data = [{'id': user.id, 'username': user.username, 'profile_picture': user.profile_picture.url if user.profile_picture else None} for user in users]
+    return JsonResponse({'users': user_data})
 
 @login_required
 def get_messages(request, user_id):
@@ -113,7 +113,19 @@ def get_messages(request, user_id):
         (Q(sender=request.user) & Q(receiver=other_user)) |
         (Q(sender=other_user) & Q(receiver=request.user))
     ).order_by('timestamp')
-    return JsonResponse({'messages': list(messages.values())})
+
+    messages_data = [
+        {
+            'id': message.id,
+            'sender': message.sender.id,
+            'receiver': message.receiver.id,
+            'content': message.content,
+            'timestamp': message.timestamp.isoformat(),
+        }
+        for message in messages
+    ]
+    
+    return JsonResponse({'messages': messages_data})
 
 @login_required
 def send_message(request):
@@ -124,6 +136,7 @@ def send_message(request):
         message = Message.objects.create(sender=request.user, receiver=receiver, content=content)
         return JsonResponse({'status': 'success', 'message': model_to_dict(message)})
     return JsonResponse({'status': 'error'}, status=400)
+
 @login_required
 def groups(request):
     groups = request.user.groups.all()

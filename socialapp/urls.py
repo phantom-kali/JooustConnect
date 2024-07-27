@@ -10,7 +10,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
 
     path('post/create/', views.create_post, name='create_post'),
-    path('post/<int:post_id>/', views.post_detail, name='post_detail'),
+    path('post/<int:post_id>/increment_view/', views.increment_view_count, name='increment_view_count'),
     path('post/<int:post_id>/like/', views.like_post, name='like_post'),
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
 

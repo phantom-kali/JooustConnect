@@ -26,6 +26,14 @@ class Post(models.Model):
     def n_comments(self):
         return self.comments.count()
 
+class PostView(models.Model):
+    post = models.ForeignKey(Post, related_name='views', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'user')
+
 class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

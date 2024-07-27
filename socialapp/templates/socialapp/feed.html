@@ -32,9 +32,46 @@
         border: none;
         font-size: 1.5rem;
         cursor: pointer;
+        z-index: 1003;
+    }
+
+    @media (max-width: 768px) {
+        .create-post-button {
+            display: block;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+
+        .create-post-form {
+            display: none;
+        }
+
+        .create-post-form.expanded-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #fff;
+            z-index: 1002;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .create-post-form.expanded-view .card {
+            box-shadow: none;
+            border: none;
+        }
+
+        .create-post-form.expanded-view .card-body {
+            padding: 0;
+        }
     }
 </style>
 {% endblock %}
+
 
 
 {% block content %}
@@ -43,7 +80,7 @@
     <div class="row">
         <div class="col-md-8">
             {% for post in posts %}
-            <div class="card mb-4">
+            <div class="card mb-4 post-card" data-post-id="{{ post.id }}">
                 <div class="card-header d-flex align-items-center">
                     {% if post.user.profile_picture %}
                     <img src="{{ post.user.profile_picture.url }}" alt="{{ post.user.username }}"
@@ -65,14 +102,13 @@
                     <button class="btn btn-sm btn-outline-secondary comment-button" data-post-id="{{ post.id }}">
                         Comment (<span class="comments-count">{{ post.n_comments }}</span>)
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary comment-button">
+                    <button class="btn btn-sm btn-outline-secondary views-button" data-post-id="{{ post.id }}">
                         Views (<span class="views-count">{{ post.n_views }}</span>)
                     </button>
                 </div>
-                <div class="comment-section {% if post.n_comments >= 4 %}expanded-view{% endif %}"
-                    style="display: none;">
-                    <button class="close-button">&times;</button>
+                <div class="comment-section" style="display: none;">
                     <div class="card-body">
+                        <button type="button" class="btn btn-danger btn-sm close-comments">Close</button>
                         <form class="comment-form" data-post-id="{{ post.id }}">
                             {% csrf_token %}
                             <div class="form-group">
@@ -83,10 +119,22 @@
                         </form>
                         <div class="comments-list mt-3">
                             {% for comment in post.comments.all %}
+
                             <div class="comment">
-                                <p><strong>{{ comment.user.username }}:</strong> {{ comment.content }}</p>
+
+                                {% if comment.user.profile_picture %}
+                                <img src="{{ comment.user.profile_picture.url }}" alt="{{ comment.user.username }}"
+                                    class="rounded-circle mr-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                {% else %}
+                                <img src="https://via.placeholder.com/40" alt="{{ comment.user.username }}"
+                                    class="rounded-circle mr-3">
+                                {% endif %}
+
+                                <strong>{{ comment.user.username }}:</strong> {{ comment.content }}
                                 <small class="text-muted">{{ comment.created_at|date:"F d, Y H:i" }}</small>
                             </div>
+                            <br>
+
                             {% endfor %}
                         </div>
                     </div>
@@ -98,7 +146,7 @@
         </div>
         <div class="col-md-4">
             <div class="sticky-sidebar">
-                <div class="card">
+                <div class="card create-post-form">
                     <div class="card-body">
                         <h5 class="card-title">Create a Post</h5>
                         <form method="post" action="{% url 'create_post' %}">
@@ -115,14 +163,122 @@
         </div>
     </div>
 </div>
+
+<!-- outside the container so it remains in view -->
+<button class="btn btn-primary create-post-button">Create</button>
 {% endblock %}
+
 
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        console.log('DOM fully loaded and parsed');
-        
+        const createPostButton = document.querySelector('.create-post-button');
+        const createPostForm = document.querySelector('.create-post-form');
+
+        createPostButton.addEventListener('click', function () {
+            createPostForm.classList.add('expanded-view');
+            createPostForm.style.display = 'block';
+            this.style.display = 'none';
+
+            // Scroll to the top of the form
+            window.scrollTo(0, 0);
+
+            // Focus on the textarea
+            setTimeout(() => {
+                createPostForm.querySelector('textarea').focus();
+            }, 100);
+        });
+
+        // Add a close button to the form if it doesn't exist
+        let closeButton = createPostForm.querySelector('.close-button');
+        if (!closeButton) {
+            closeButton = document.createElement('button');
+            closeButton.className = 'btn btn-secondary close-button';
+            closeButton.innerHTML = '&times;'; // Use × symbol instead of text
+            createPostForm.insertBefore(closeButton, createPostForm.firstChild);
+        }
+
+        closeButton.addEventListener('click', function () {
+            createPostForm.classList.remove('expanded-view');
+            createPostForm.style.display = 'none';
+            createPostButton.style.display = 'block';
+        });
+
+        // Handle viewport changes (including keyboard appearance)
+        let viewportHeight = window.innerHeight;
+        window.addEventListener('resize', function () {
+            if (window.innerHeight < viewportHeight) {
+                // Keyboard likely appeared
+                createPostForm.style.height = 'auto';
+                createPostForm.style.bottom = 'auto';
+            } else {
+                // Keyboard likely disappeared
+                createPostForm.style.height = '100%';
+                createPostForm.style.bottom = '0';
+            }
+            viewportHeight = window.innerHeight;
+        });
+
+        // Initially hide the form on smaller screens
+        function adjustFormVisibility() {
+            if (window.innerWidth <= 768) {
+                createPostForm.style.display = 'none';
+                createPostButton.style.display = 'block';
+            } else {
+                createPostForm.style.display = 'block';
+                createPostButton.style.display = 'none';
+            }
+        }
+
+        // Call on load and on window resize
+        adjustFormVisibility();
+        window.addEventListener('resize', adjustFormVisibility);
+
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Create the Intersection Observer
+        let observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const postId = entry.target.dataset.postId;
+                    fetch(`/post/${postId}/increment_view/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            entry.target.querySelector('.views-count').textContent = data.n_views;
+                        })
+                        .catch(error => console.error('Error:', error));
+                    // Unobserve after incrementing the view count
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 }); // Adjust threshold as needed
+
+        // Observe each post
+        document.querySelectorAll('.post-card').forEach(post => {
+            observer.observe(post);
+        });
+
         // Like button functionality
         document.querySelectorAll('.like-button').forEach(button => {
             button.addEventListener('click', function () {
@@ -159,8 +315,8 @@
             });
         });
 
-        // Close button functionality
-        document.querySelectorAll('.close-button').forEach(button => {
+        // Close expanded comment section functionality
+        document.querySelectorAll('.close-comments').forEach(button => {
             button.addEventListener('click', function () {
                 const commentSection = this.closest('.comment-section');
                 commentSection.style.display = 'none';
@@ -189,9 +345,9 @@
                             const newComment = document.createElement('div');
                             newComment.className = 'comment';
                             newComment.innerHTML = `
-                                <p><strong>${data.comment.user}:</strong> ${data.comment.content}</p>
-                                <small class="text-muted">${data.comment.created_at}</small>
-                            `;
+                            <p><strong>${data.comment.user}:</strong> ${data.comment.content}</p>
+                            <small class="text-muted">${data.comment.created_at}</small>
+                        `;
                             commentsList.prepend(newComment);
                             this.reset();
                             const commentsCountElement = this.closest('.card').querySelector('.comments-count');
@@ -206,22 +362,6 @@
                     .catch(error => console.error('Error:', error));
             });
         });
-
-        // Function to get CSRF token from cookies
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
     });
 </script>
 {% endblock %}
