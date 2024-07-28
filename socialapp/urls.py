@@ -20,6 +20,12 @@ urlpatterns = [
     path('send-message/', views.send_message, name='send_message'),
     
     path('groups/', views.groups, name='groups'),
+    path('groups/create/', views.create_group, name='create_group'),
+    path('groups/<int:group_id>/', views.group_detail, name='group_detail'),
+    path('groups/<int:group_id>/post/', views.add_group_post, name='add_group_post'),
+    path('groups/<int:group_id>/messages/', views.group_messages, name='group_messages'),
+
+
     path('notifications/', views.notifications, name='notifications'),
     path('settings/', views.settings, name='settings'),
 ]

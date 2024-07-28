@@ -1,5 +1,5 @@
 from django import forms
-from .models import User, Post
+from .models import User, Post, Group, GroupPost
 
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -31,3 +31,14 @@ class UserSettingsForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['nickname', 'course', 'year', 'profile_picture', 'bio', 'privacy_dms', 'privacy_posts']
+
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name', 'description']
+
+class GroupPostForm(forms.ModelForm):
+    class Meta:
+        model = GroupPost
+        fields = ['content']

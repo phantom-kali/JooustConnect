@@ -1,13 +1,28 @@
+import json
 from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import User, Post, Group, Message, Notification, Comment, PostView
-from .forms import UserRegistrationForm, PostForm, UserSettingsForm
+from .models import User, Post, Group, Message, Notification, Comment, PostView, GroupPost, GroupMessage
+from .forms import UserRegistrationForm, PostForm, UserSettingsForm, GroupForm, GroupPostForm
 from django.contrib.auth import login, get_user_model
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
+from django.core.serializers.json import DjangoJSONEncoder
+
+class MessageEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, GroupMessage):
+            return {
+                'content': obj.content,
+                'timestamp': obj.timestamp.isoformat(),
+                'sender_id': obj.sender.id,
+                'sender__username': obj.sender.username,
+            }
+        return super().default(obj)
+
+
 
 def home(request):
     return render(request, 'socialapp/home.html')
@@ -139,8 +154,64 @@ def send_message(request):
 
 @login_required
 def groups(request):
-    groups = request.user.groups.all()
+    groups = Group.objects.all()
     return render(request, 'socialapp/groups.html', {'groups': groups})
+
+@login_required
+def create_group(request):
+    if request.method == 'POST':
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            group_name = form.cleaned_data['name']
+            if Group.objects.filter(name=group_name).exists():
+                form.add_error('name', 'There is a group with similar name.')
+            else:
+                group = form.save(commit=False)
+                group.save()
+                group.members.add(request.user)
+                group.admins.add(request.user)
+                return redirect('groups')
+
+    else:
+        form = GroupForm()
+    return render(request, 'socialapp/create_group.html', {'form': form})
+
+@login_required
+def group_detail(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    posts = group.posts.all().order_by('-created_at')
+    post_form = GroupPostForm()
+    return render(request, 'socialapp/group_detail.html', {'group': group, 'posts': posts, 'post_form': post_form})
+
+@login_required
+@require_POST
+def add_group_post(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    form = GroupPostForm(request.POST)
+    if form.is_valid():
+        post = form.save(commit=False)
+        post.group = group
+        post.user = request.user
+        post.save()
+        return redirect('group_detail', group_id=group.id)
+    return redirect('group_detail', group_id=group.id)
+
+@login_required
+def group_messages(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    messages = group.messages.all().order_by('-timestamp')[:100]  # Get last 100 messages
+    messages = reversed(messages)
+    members = group.members.all()
+    
+    # Serialize messages
+    messages_json = json.dumps(list(messages), cls=MessageEncoder)
+    
+    context = {
+        'group': group,
+        'messages_json': messages_json,
+        'members': members,
+    }
+    return render(request, 'socialapp/group_messages.html', context)
 
 @login_required
 def notifications(request):
