@@ -5,9 +5,23 @@
     <h2 class="mt-4">Create Post</h2>
     <div class="row">
         <div class="col-md-6 offset-md-3">
-            <form method="post">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{ form.as_p }}
+                {{ form.non_field_errors }}
+                <div class="form-group">
+                    {{ form.content.errors }}
+                    {{ form.content }}
+                </div>
+                <div class="form-group">
+                    {{ form.image.errors }}
+                    <label for="{{ form.image.id_for_label }}">Image (optional):</label>
+                    {{ form.image }}
+                </div>
+                <div class="form-group">
+                    {{ form.video.errors }}
+                    <label for="{{ form.video.id_for_label }}">Video (optional):</label>
+                    {{ form.video }}
+                </div>
                 <button type="submit" class="btn btn-primary mt-3">Post</button>
             </form>
         </div>

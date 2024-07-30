@@ -94,6 +94,15 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text">{{ post.content }}</p>
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" alt="Post image" class="img-fluid mb-3">
+                    {% endif %}
+                    {% if post.video %}
+                        <video width="100%" controls class="mb-3">
+                            <source src="{{ post.video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endif %}
                 </div>
                 <div class="card-footer">
                     <button class="btn btn-sm btn-outline-primary like-button" data-post-id="{{ post.id }}">
