@@ -1,20 +1,46 @@
-{% extends 'base.html' %}
+{% extends 'socialapp/base.html' %}
 
 {% block content %}
-<h2>Premium Dashboard</h2>
-<div>
-    <p>Total Posts: {{ total_posts }}</p>
-    <p>Total Views: {{ total_views }}</p>
-    <p>Total Likes: {{ total_likes }}</p>
-    <p>Total Comments: {{ total_comments }}</p>
-</div>
+<div class="container mt-5">
+    <h2 class="mb-4">Premium Dashboard</h2>
 
-<h3>Your Posts</h3>
-{% for post in posts %}
-<div class="post">
-    <p>{{ post.content }}</p>
-    <p>Views: {{ post.n_views }} | Likes: {{ post.likes.count }} | Comments: {{ post.comments.count }}</p>
-    <a href="{% url 'post_viewers' post.id %}">View Post Viewers</a>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Summary</h5>
+            <p class="card-text">Total Posts: <strong>{{ total_posts }}</strong></p>
+            <p class="card-text">Total Views: <strong>{{ total_views }}</strong></p>
+            <p class="card-text">Total Likes: <strong>{{ total_likes }}</strong></p>
+            <p class="card-text">Total Comments: <strong>{{ total_comments }}</strong></p>
+        </div>
+    </div>
+
+    <h3 class="mb-4">Your Posts</h3>
+    <!-- Search Form -->
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="query" value="{{ request.GET.query }}" class="form-control" placeholder="Search posts...">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
+
+    {% if posts %}
+        {% for post in posts %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <p class="card-text">{{ post.content }}</p>
+                <p class="card-text">
+                    Views: <span class="badge bg-secondary">{{ post.n_views }}</span> | 
+                    Likes: <span class="badge bg-primary">{{ post.likes.count }}</span> | 
+                    Comments: <span class="badge bg-info">{{ post.comments.count }}</span>
+                </p>
+                <a href="{% url 'post_viewers' post.id %}" class="btn btn-outline-primary">View Post Viewers</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info">No posts found.</div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">No posts available.</div>
+    {% endif %}
 </div>
-{% endfor %}
 {% endblock %}

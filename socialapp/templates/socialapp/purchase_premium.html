@@ -1,33 +1,44 @@
 {% extends 'socialapp/base.html' %}
 
 {% block content %}
-<h2>{% if is_renewal %}Renew{% else %}Upgrade to{% endif %} Premium</h2>
+<div class="container mt-5">
+    <h2 class="mb-4">{% if is_renewal %}Renew{% else %}Upgrade to{% endif %} Premium</h2>
 
-{% if is_renewal %}
-    <p>Your current premium subscription will expire in {{ premium_days_left }} days.</p>
-{% else %}
-    <p>Enjoy exclusive benefits including:</p>
-    <ul>
-        <li>Boosted posts</li>
-        <li>Detailed analytics</li>
-        <li>View who's seen your posts</li>
-    </ul>
-{% endif %}
+    <div class="mb-4">
+        {% if is_renewal %}
+            <p class="lead">Your current premium subscription will expire in <strong>{{ premium_days_left }} days</strong>.</p>
+        {% else %}
+            <p class="lead">Enjoy exclusive benefits including:</p>
+            <ul class="list-group">
+                <li class="list-group-item">Boosted posts</li>
+                <li class="list-group-item">Detailed analytics</li>
+                <li class="list-group-item">View who's seen your posts</li>
+            </ul>
+        {% endif %}
+    </div>
 
-<p>Premium subscription fee: Ksh {{ premium_fee }}</p>
+    <p class="h4 mb-4">Premium subscription fee: <strong>Ksh 200 </strong></p>
 
-<form method="post">
-    {% csrf_token %}
-    <label for="mpesa_message">Enter your M-Pesa message:</label>
-    <textarea name="mpesa_message" id="mpesa_message" rows="4" required></textarea>
-    <button type="submit">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</button>
-</form>
+    <div class="card p-4">
+        <h5 class="card-title mb-4">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</h5>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="mpesa_message" class="form-label">Enter your M-Pesa message:</label>
+                <textarea name="mpesa_message" id="mpesa_message" class="form-control" rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</button>
+        </form>
+    </div>
 
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
+    {% if messages %}
+        <div class="mt-4">
+            <ul class="list-unstyled">
+                {% for message in messages %}
+                <li class="alert{% if message.tags %} alert-{{ message.tags }}{% else %} alert-info{% endif %}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

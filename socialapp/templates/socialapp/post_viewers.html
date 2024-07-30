@@ -1,18 +1,25 @@
-{% extends 'base.html' %}
+{% extends 'socialapp/base.html' %}
 
 {% block content %}
-<h2>Viewers for Post: {{ post.content|truncatewords:10 }}</h2>
+<div class="container mt-5">
+    <h2 class="mb-4">Viewers for Post: {{ post.content|truncatewords:10 }}</h2>
 
-<form method="get">
-    <input type="text" name="query" value="{{ query }}" placeholder="Search viewers...">
-    <button type="submit">Search</button>
-</form>
+    <!-- Search Form -->
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="query" value="{{ query }}" class="form-control" placeholder="Search viewers...">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
 
-<ul>
-{% for view in viewers %}
-    <li>{{ view.user.username }} - Viewed at: {{ view.viewed_at }}</li>
-{% empty %}
-    <li>No viewers found.</li>
-{% endfor %}
-</ul>
+    <ul class="list-group">
+        {% for view in viewers %}
+        <li class="list-group-item">
+            {{ view.user.username }} - Viewed at: {{ view.viewed_at }}
+        </li>
+        {% empty %}
+        <li class="list-group-item">No viewers found.</li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}

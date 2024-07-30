@@ -65,7 +65,17 @@ def feed(request):
 @login_required
 @user_passes_test(is_premium)
 def premium_dashboard(request):
+    # Get the search query from the GET request
+    query = request.GET.get('query', '')
+
+    # Get the user's posts
     user_posts = Post.objects.filter(user=request.user)
+
+    # Filter posts based on the search query
+    if query:
+        user_posts = user_posts.filter(content__icontains=query)
+
+    # Calculate statistics based on the filtered posts
     total_views = sum(post.n_views for post in user_posts)
     total_likes = sum(post.likes.count() for post in user_posts)
     total_comments = sum(post.comments.count() for post in user_posts)
@@ -76,6 +86,7 @@ def premium_dashboard(request):
         'total_likes': total_likes,
         'total_comments': total_comments,
         'posts': user_posts,
+        'query': query  # Include the query in the context to pre-fill the search box
     }
     return render(request, 'socialapp/premium_dashboard.html', context)
 
@@ -96,11 +107,17 @@ def post_viewers(request, post_id):
     post = get_object_or_404(Post, id=post_id, user=request.user)
     viewers = post.views.select_related('user').order_by('-viewed_at')
     
+    # Get search query from the GET request
     query = request.GET.get('query', '')
     if query:
         viewers = viewers.filter(user__username__icontains=query)
     
-    return render(request, 'socialapp/post_viewers.html', {'post': post, 'viewers': viewers, 'query': query})
+    context = {
+        'post': post,
+        'viewers': viewers,
+        'query': query,
+    }
+    return render(request, 'socialapp/post_viewers.html', context)
 
 @login_required
 @csrf_exempt
