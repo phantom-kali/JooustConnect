@@ -43,13 +43,8 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'groups' %}">Groups</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Notifications <span id="notificationCount" class="badge bg-danger"></span>
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="notificationDropdown" id="notificationList">
-                            <!-- Notifications will be loaded here by JavaScript -->
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'notifications' %}">Notifications <span id="notificationCount" class="badge bg-danger"></span></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'settings' %}">Settings</a>
@@ -111,30 +106,10 @@
                 fetch('/get-notifications/')
                     .then(response => response.json())
                     .then(data => {
-                        const notificationList = document.getElementById('notificationList');
                         const notificationCount = document.getElementById('notificationCount');
-                        notificationList.innerHTML = ''; // Clear existing notifications
-
                         if (data.notifications.length > 0) {
-                            data.notifications.slice(0, 5).forEach(notification => { // Show only the latest 5
-                                const notificationItem = document.createElement('li');
-                                notificationItem.className = "dropdown-item";
-                                notificationItem.innerHTML = `
-                            ${notification.content} <br>
-                            <small class="text-muted">${new Date(notification.timestamp).toLocaleString()}</small>
-                            <button class="btn btn-primary btn-sm" onclick="markAsRead(${notification.id})">Mark as Read</button>
-                        `;
-                                notificationList.appendChild(notificationItem);
-                            });
-
-                            // Add a "View All" link
-                            const viewAllItem = document.createElement('li');
-                            viewAllItem.innerHTML = '<a class="dropdown-item text-center" href="/notifications/">View All Notifications</a>';
-                            notificationList.appendChild(viewAllItem);
-
                             notificationCount.textContent = data.notifications.length;
                         } else {
-                            notificationList.innerHTML = '<li class="dropdown-item">No new notifications</li>';
                             notificationCount.textContent = '';
                         }
                     });
@@ -143,25 +118,6 @@
             loadNotifications(); // Load notifications when the page loads
             setInterval(loadNotifications, 30000); // Refresh notifications every 30 seconds
         });
-
-        function markAsRead(notificationId) {
-            fetch(`/mark-notification-read/${notificationId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        loadNotifications(); // Reload notifications instead of full page refresh
-                    } else {
-                        alert('Failed to mark notification as read.');
-                    }
-                });
-        }
     </script>
     {% endblock %}
 </body>

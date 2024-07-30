@@ -3,21 +3,41 @@
 {% block content %}
 <div class="container">
     <h1 class="mt-4">Notifications</h1>
-    <div class="list-group" id="notificationContainer">
+    <br>
+    
+    <!-- Unread Notifications -->
+    <h2>Unread Notifications</h2>
+    <div class="list-group" id="unreadNotifications">
         {% for notification in notifications %}
-        <div class="list-group-item d-flex justify-content-between align-items-center" id="notification-{{ notification.id }}">
-            <div>
-                {{ notification.content }}
-                <small class="text-muted">{{ notification.timestamp }}</small>
-            </div>
             {% if not notification.is_read %}
-            <button class="btn btn-primary btn-sm" onclick="markAsRead({{ notification.id }})">Mark as Read</button>
-            {% else %}
-            <span class="badge bg-success">Read</span>
+                <div class="list-group-item d-flex justify-content-between align-items-center" id="notification-{{ notification.id }}">
+                    <div>
+                        {{ notification.content }}
+                        <small class="text-muted">{{ notification.timestamp }}</small>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="markAsRead({{ notification.id }})">Mark as Read</button>
+                </div>
             {% endif %}
-        </div>
         {% empty %}
-        <div class="list-group-item">No notifications</div>
+            <div class="list-group-item">No unread notifications</div>
+        {% endfor %}
+    </div>
+
+    <!-- Read Notifications -->
+    <h2 class="mt-4">Read Notifications</h2>
+    <div class="list-group" id="readNotifications">
+        {% for notification in notifications %}
+            {% if notification.is_read %}
+                <div class="list-group-item d-flex justify-content-between align-items-center" id="notification-{{ notification.id }}">
+                    <div>
+                        {{ notification.content }}
+                        <small class="text-muted">{{ notification.timestamp }}</small>
+                    </div>
+                    <span class="badge bg-success">Read</span>
+                </div>
+            {% endif %}
+        {% empty %}
+            <div class="list-group-item">No read notifications</div>
         {% endfor %}
     </div>
 </div>
@@ -42,6 +62,8 @@ function markAsRead(notificationId) {
                     textContent: 'Read'
                 })
             );
+            // Move the notification to the read section
+            document.getElementById('readNotifications').appendChild(notificationElement);
         } else {
             alert('Failed to mark notification as read.');
         }
