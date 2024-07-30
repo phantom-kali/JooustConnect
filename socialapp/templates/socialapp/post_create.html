@@ -1,10 +1,16 @@
 {% extends 'socialapp/base.html' %}
 
 {% block content %}
-<h2>Create Post</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Post</button>
-</form>
+<div class="container">
+    <h2 class="mt-4">Create Post</h2>
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary mt-3">Post</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

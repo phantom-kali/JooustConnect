@@ -27,11 +27,10 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ['content']
 
-class UserSettingsForm(forms.ModelForm):
+class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['nickname', 'course', 'year', 'profile_picture', 'bio', 'privacy_dms', 'privacy_posts']
-
 
 class GroupForm(forms.ModelForm):
     class Meta:

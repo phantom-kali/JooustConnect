@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .models import User, Post, Group, Message, Notification, Comment, PostView, GroupPost, GroupMessage
-from .forms import UserRegistrationForm, PostForm, UserSettingsForm, GroupForm, GroupPostForm
+from .forms import UserRegistrationForm, PostForm, UserProfileForm, GroupForm, GroupPostForm
 from django.contrib.auth import login, get_user_model
 from django.db.models import Q
 from django.views.decorators.http import require_POST
@@ -21,7 +21,6 @@ class MessageEncoder(DjangoJSONEncoder):
                 'sender__username': obj.sender.username,
             }
         return super().default(obj)
-
 
 
 def home(request):
@@ -112,7 +111,6 @@ def messages(request):
             users.append(get_user_model().objects.get(id=conv['sender']))
     
     return render(request, 'socialapp/messages.html', {'users': users})
-
 
 @login_required
 def search_users(request):
@@ -219,12 +217,31 @@ def notifications(request):
     return render(request, 'socialapp/notifications.html', {'notifications': notifications})
 
 @login_required
+def get_notifications(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+    data = [{
+        'id': n.id,
+        'content': n.content,
+        'timestamp': n.timestamp.isoformat(),
+        'is_read': n.is_read
+    } for n in notifications]
+    return JsonResponse({'notifications': data})
+
+@login_required
+def mark_notification_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.is_read = True
+    notification.save()
+    return JsonResponse({'status': 'success'})
+
+@login_required
 def settings(request):
     if request.method == 'POST':
-        form = UserSettingsForm(request.POST, request.FILES, instance=request.user)
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect('feed')
+            return redirect('settings')
     else:
-        form = UserSettingsForm(instance=request.user)
+        form = UserProfileForm(instance=request.user)
+
     return render(request, 'socialapp/settings.html', {'form': form})

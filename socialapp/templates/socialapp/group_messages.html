@@ -143,6 +143,50 @@
         scrollToBottom();
     });
 
+    // Request notification permission on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (Notification.permission !== "granted") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    console.log("Notification permission granted.");
+                } else {
+                    console.log("Notification permission denied.");
+                }
+            });
+        }
+    });
+
+
+    // Connect to the WebSocket
+    const notificationSocket = new WebSocket(
+        'ws://' + window.location.host +
+        '/ws/notifications/'
+    );
+
+    notificationSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'notification') {
+            // Display the notification
+            showNotification(data.notification);
+        }
+    };
+
+    function showNotification(notification) {
+        // Check if permission has already been granted
+        if (Notification.permission === "granted") {
+            new Notification(notification.content);
+        } else if (Notification.permission !== "denied") {
+            // Request permission and show notification if granted
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification(notification.content);
+                }
+            });
+        } else {
+            console.log("Notification permission denied.");
+        }
+    }
+
     function connectWebSocket(groupId) {
         socket = new WebSocket(`ws://${window.location.host}/ws/group_chat/${groupId}/`);
 

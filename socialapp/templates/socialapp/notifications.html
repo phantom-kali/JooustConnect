@@ -1,0 +1,51 @@
+{% extends 'socialapp/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Notifications</h1>
+    <div class="list-group" id="notificationContainer">
+        {% for notification in notifications %}
+        <div class="list-group-item d-flex justify-content-between align-items-center" id="notification-{{ notification.id }}">
+            <div>
+                {{ notification.content }}
+                <small class="text-muted">{{ notification.timestamp }}</small>
+            </div>
+            {% if not notification.is_read %}
+            <button class="btn btn-primary btn-sm" onclick="markAsRead({{ notification.id }})">Mark as Read</button>
+            {% else %}
+            <span class="badge bg-success">Read</span>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="list-group-item">No notifications</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/mark-notification-read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const notificationElement = document.getElementById(`notification-${notificationId}`);
+            notificationElement.querySelector('button').replaceWith(
+                Object.assign(document.createElement('span'), {
+                    className: 'badge bg-success',
+                    textContent: 'Read'
+                })
+            );
+        } else {
+            alert('Failed to mark notification as read.');
+        }
+    });
+}
+</script>
+{% endblock %}
