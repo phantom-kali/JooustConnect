@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Post, PostView, Comment, Group, GroupPost, GroupMessage, Message, Notification, Report
+from .models import User, Post, PostView, Comment, Group, GroupPost, GroupMessage, Message, Notification, Report, MpesaTransaction
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -78,4 +78,12 @@ class NotificationAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'content')
     list_filter = ('is_read', 'timestamp')
     ordering = ('-timestamp',)
+
+
+@admin.register(MpesaTransaction)
+class MpesaTransactionAdmin(admin.ModelAdmin):
+    list_display = ('transaction_id', 'amount', 'phone_number','transaction_date')
+    search_fields = ('transaction_id', 'phone_number', 'amount')
+    list_filter = ('transaction_date', 'amount')
+    ordering = ('-transaction_date',)
 

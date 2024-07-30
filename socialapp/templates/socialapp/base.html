@@ -16,11 +16,20 @@
         .content {
             margin-top: 20px;
         }
+
+        .dark-theme {
+            background-color: #212529;
+            color: #f8f9fa;
+        }
+
+        .dark-theme .navbar {
+            background-color: #343a40;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body class="{% if user.is_authenticated and user.profile.dark_mode %}dark-theme{% endif %}">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">JooustConnect</a>
@@ -31,36 +40,49 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'feed' %}">Feed</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'create_post' %}">Create Post</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'messages' %}">Messages</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'groups' %}">Groups</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'notifications' %}">Notifications <span id="notificationCount"
-                                class="badge bg-danger"></span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'settings' %}">Settings</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                    </li>
+                    {% if is_premium %}
+                        <a class="nav-link" href="{% url 'premium_dashboard' %}">Premium Dashboard</a>
+                        <span>({{ premium_days_left }} days left)</span>
+                        {% if premium_days_left <= 7 %} 
+                            <a class="nav-link" href="{% url 'purchase_premium' %}">Renew Premium</a>
+                        {% endif %}
                     {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
-                    </li>
+                        <a class="nav-link" href="{% url 'purchase_premium' %}">Upgrade to Premium</a>
                     {% endif %}
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'feed' %}">Feed</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_post' %}">Create Post</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'messages' %}">Messages</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'groups' %}">Groups</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'notifications' %}">Notifications <span
+                                    id="notificationCount" class="badge bg-danger"></span></a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link" href="{% url 'purchase_premium' %}">Premium</a>
+                        </li> -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'settings' %}">Settings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        </li>
+                        {% endif %}
                 </ul>
             </div>
         </div>

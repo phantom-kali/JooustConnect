@@ -1,0 +1,33 @@
+{% extends 'socialapp/base.html' %}
+
+{% block content %}
+<h2>{% if is_renewal %}Renew{% else %}Upgrade to{% endif %} Premium</h2>
+
+{% if is_renewal %}
+    <p>Your current premium subscription will expire in {{ premium_days_left }} days.</p>
+{% else %}
+    <p>Enjoy exclusive benefits including:</p>
+    <ul>
+        <li>Boosted posts</li>
+        <li>Detailed analytics</li>
+        <li>View who's seen your posts</li>
+    </ul>
+{% endif %}
+
+<p>Premium subscription fee: Ksh {{ premium_fee }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="mpesa_message">Enter your M-Pesa message:</label>
+    <textarea name="mpesa_message" id="mpesa_message" rows="4" required></textarea>
+    <button type="submit">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</button>
+</form>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

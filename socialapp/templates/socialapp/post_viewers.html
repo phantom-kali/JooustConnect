@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Viewers for Post: {{ post.content|truncatewords:10 }}</h2>
+
+<form method="get">
+    <input type="text" name="query" value="{{ query }}" placeholder="Search viewers...">
+    <button type="submit">Search</button>
+</form>
+
+<ul>
+{% for view in viewers %}
+    <li>{{ view.user.username }} - Viewed at: {{ view.viewed_at }}</li>
+{% empty %}
+    <li>No viewers found.</li>
+{% endfor %}
+</ul>
+{% endblock %}

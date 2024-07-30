@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Premium Dashboard</h2>
+<div>
+    <p>Total Posts: {{ total_posts }}</p>
+    <p>Total Views: {{ total_views }}</p>
+    <p>Total Likes: {{ total_likes }}</p>
+    <p>Total Comments: {{ total_comments }}</p>
+</div>
+
+<h3>Your Posts</h3>
+{% for post in posts %}
+<div class="post">
+    <p>{{ post.content }}</p>
+    <p>Views: {{ post.n_views }} | Likes: {{ post.likes.count }} | Comments: {{ post.comments.count }}</p>
+    <a href="{% url 'post_viewers' post.id %}">View Post Viewers</a>
+</div>
+{% endfor %}
+{% endblock %}

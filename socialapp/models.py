@@ -8,6 +8,12 @@ class User(AbstractUser):
     year = models.IntegerField(null=True, blank=True)  # Make this optional
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True)
     bio = models.TextField(blank=True)
+
+    is_verified = models.BooleanField(default=False)
+    is_premium = models.BooleanField(default=False)
+    premium_expiry = models.DateTimeField(null=True, blank=True)
+
+    
     privacy_dms = models.BooleanField(default=False)
     privacy_posts = models.BooleanField(default=False)
 
@@ -19,6 +25,9 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     n_views = models.PositiveIntegerField(default=0)
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
+
+    is_boosted = models.BooleanField(default=False)
+    boost_expires_at = models.DateTimeField(null=True, blank=True)
 
     @property
     def n_likes(self):
@@ -98,3 +107,14 @@ class Notification(models.Model):
     content = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class MpesaTransaction(models.Model):
+    transaction_id = models.CharField(max_length=100, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    phone_number = models.CharField(max_length=15)
+    transaction_date = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.transaction_id} - {self.amount}"

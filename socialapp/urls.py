@@ -16,6 +16,12 @@ urlpatterns = [
     path('delete_post/<int:post_id>/', views.delete_post, name='delete_post'),
     path('report_post/<int:post_id>/', views.report_post, name='report_post'),
 
+    path('premium-dashboard/', views.premium_dashboard, name='premium_dashboard'),
+    path('post/<int:post_id>/viewers/', views.post_viewers, name='post_viewers'),
+    path('purchase-premium/', views.purchase_premium, name='purchase_premium'),
+
+    path('add-mpesa-transaction/', views.add_mpesa_transaction, name='add_mpesa_transaction'),
+
     path('search-users/', views.search_users, name='search_users'),
     path('messages/', views.messages, name='messages'),
     path('get-messages/<int:user_id>/', views.get_messages, name='get_messages'),

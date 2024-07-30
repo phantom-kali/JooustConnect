@@ -3,13 +3,21 @@ from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import User, Post, Group, Message, Notification, Comment, PostView, GroupPost, GroupMessage, Report
+from .models import User, Post, Group, Message, Notification, Comment, PostView, GroupPost, GroupMessage, Report, MpesaTransaction
 from .forms import UserRegistrationForm, PostForm, UserProfileForm, GroupForm, GroupPostForm
 from django.contrib.auth import login, get_user_model
 from django.db.models import Q
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
+from django.db.models import Count, Sum
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+from decimal import Decimal
+from .utils import extract_mpesa_details
 
 class MessageEncoder(DjangoJSONEncoder):
     def default(self, obj):
@@ -39,10 +47,139 @@ def register(request):
         form = UserRegistrationForm()
     return render(request, 'socialapp/register.html', {'form': form})
 
+
+def is_premium(user):
+    return user.is_premium and user.premium_expiry is not None and user.premium_expiry > timezone.now()
+
 @login_required
 def feed(request):
-    posts = Post.objects.all().order_by('-created_at')
-    return render(request, 'socialapp/feed.html', {'posts': posts})
+    posts = Post.objects.select_related('user').prefetch_related('likes', 'comments', 'views').order_by('-created_at')
+    
+    # Prioritize posts by premium users
+    premium_posts = posts.filter(user__is_premium=True, user__premium_expiry__gt=timezone.now())
+    regular_posts = posts.filter(Q(user__is_premium=False) | Q(user__premium_expiry__lte=timezone.now()))
+    
+    all_posts = list(premium_posts) + list(regular_posts)
+    return render(request, 'socialapp/feed.html', {'posts': all_posts[:50]})  # Limit to 50 posts for performance
+
+@login_required
+@user_passes_test(is_premium)
+def premium_dashboard(request):
+    user_posts = Post.objects.filter(user=request.user)
+    total_views = sum(post.n_views for post in user_posts)
+    total_likes = sum(post.likes.count() for post in user_posts)
+    total_comments = sum(post.comments.count() for post in user_posts)
+    
+    context = {
+        'total_posts': user_posts.count(),
+        'total_views': total_views,
+        'total_likes': total_likes,
+        'total_comments': total_comments,
+        'posts': user_posts,
+    }
+    return render(request, 'socialapp/premium_dashboard.html', context)
+
+
+def premium_status(request):
+    if request.user.is_authenticated:
+        is_premium = request.user.is_premium and request.user.premium_expiry is not None and request.user.premium_expiry > timezone.now()
+        days_left = (request.user.premium_expiry - timezone.now()).days if is_premium else 0
+        return {
+            'is_premium': is_premium,
+            'premium_days_left': days_left
+        }
+    return {'is_premium': False, 'premium_days_left': 0}
+
+@login_required
+@user_passes_test(is_premium)
+def post_viewers(request, post_id):
+    post = get_object_or_404(Post, id=post_id, user=request.user)
+    viewers = post.views.select_related('user').order_by('-viewed_at')
+    
+    query = request.GET.get('query', '')
+    if query:
+        viewers = viewers.filter(user__username__icontains=query)
+    
+    return render(request, 'socialapp/post_viewers.html', {'post': post, 'viewers': viewers, 'query': query})
+
+@login_required
+@csrf_exempt
+def purchase_premium(request):
+    if request.method == 'POST':
+        mpesa_message = request.POST.get('mpesa_message')
+        if not mpesa_message:
+            messages.error(request, "M-Pesa message is required.")
+            return render(request, 'socialapp/purchase_premium.html')
+
+        transaction_id, amount, transaction_date, phone_number = extract_mpesa_details(mpesa_message, action='verify')
+
+        if transaction_id and amount and transaction_date and phone_number:
+            # Check if the amount paid matches the premium subscription fee
+            premium_fee = Decimal('200.00')  # Set your premium fee here
+            if amount == premium_fee:
+                try:
+                    transaction = MpesaTransaction.objects.get(transaction_id=transaction_id)
+                    if not transaction.is_used:
+                        if transaction.amount == amount and transaction.phone_number == phone_number:
+                            transaction.is_used = True
+                            transaction.user = request.user
+                            transaction.save()
+
+                            request.user.is_premium = True
+                            if request.user.premium_expiry and request.user.premium_expiry > timezone.now():
+                                # If the user is renewing, add 30 days to their current expiry date
+                                request.user.premium_expiry += timezone.timedelta(days=30)
+                            else:
+                                # For new subscriptions or expired ones, set a new 30-day period
+                                request.user.premium_expiry = timezone.now() + timezone.timedelta(days=30)
+                            request.user.save()
+
+                            messages.success(request, "Premium subscription activated successfully!")
+                            return redirect('premium_dashboard')
+                        else:
+                            messages.error(request, "Transaction details do not match our records.")
+                    else:
+                        messages.error(request, "This transaction has already been used.")
+                except MpesaTransaction.DoesNotExist:
+                    messages.error(request, "Transaction not found in our records.")
+            else:
+                messages.error(request, f"The amount paid (Ksh {amount}) does not match the required fee (Ksh {premium_fee}).")
+        else:
+            messages.error(request, "Invalid M-Pesa message. Please check and try again.")
+
+    is_renewal = is_premium(request.user)
+    context = {
+        'is_renewal': is_renewal,
+        'premium_fee': 200.00,
+    }
+
+    return render(request, 'socialapp/purchase_premium.html')
+
+@csrf_exempt
+@require_POST
+def add_mpesa_transaction(request):
+    mpesa_message = request.POST.get('mpesa_message')
+    if not mpesa_message:
+        return JsonResponse({'error': 'M-Pesa message is required'}, status=400)
+    
+    transaction_id, amount, transaction_date, phone_number = extract_mpesa_details(mpesa_message, action='add')
+    
+    if transaction_id and amount and transaction_date and phone_number:
+        transaction, created = MpesaTransaction.objects.get_or_create(
+            transaction_id=transaction_id,
+            defaults={
+                'amount': amount,
+                'phone_number': phone_number,
+                'transaction_date': transaction_date
+            }
+        )
+        
+        if created:
+            return JsonResponse({'message': 'Transaction added successfully'})
+        else:
+            return JsonResponse({'message': 'Transaction already exists'})
+    else:
+        return JsonResponse({'error': 'Invalid M-Pesa message'}, status=400)
 
 @login_required
 def increment_view_count(request, post_id):
@@ -91,6 +228,8 @@ def create_post(request):
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
+            if is_premium(request.user):
+                post.is_boosted = True
             post.save()
             return redirect('feed')
     else:

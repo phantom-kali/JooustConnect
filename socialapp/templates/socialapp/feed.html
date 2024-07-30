@@ -73,17 +73,21 @@
     .post-card {
         position: relative;
     }
+
     .post-menu {
         position: absolute;
         top: 10px;
         right: 10px;
     }
+
     .dropdown-toggle::after {
         display: none;
     }
+
     .dropdown-toggle {
         color: #6c757d;
     }
+
     .dropdown-toggle:hover {
         color: #343a40;
     }
@@ -106,6 +110,9 @@
                         class="rounded-circle mr-3">
                     {% endif %}
                     <h5 class="mb-0 ml-2">{{ post.user.username }}</h5>
+                    {% if post.user.is_verified %}
+                    <span class="verified-badge">✓</span>
+                    {% endif %}
                     <small class="text-muted ml-auto">{{ post.created_at|date:"F d, Y H:i" }}</small>
 
                     <div class="dropdown post-menu">
@@ -115,9 +122,11 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="postMenu{{ post.id }}">
                             {% if post.user == request.user %}
-                            <li><a class="dropdown-item delete-post" href="#" data-post-id="{{ post.id }}">Delete</a></li>
+                            <li><a class="dropdown-item delete-post" href="#" data-post-id="{{ post.id }}">Delete</a>
+                            </li>
                             {% endif %}
-                            <li><a class="dropdown-item report-post" href="#" data-post-id="{{ post.id }}">Report</a></li>
+                            <li><a class="dropdown-item report-post" href="#" data-post-id="{{ post.id }}">Report</a>
+                            </li>
                         </ul>
                     </div>
                 </div>
