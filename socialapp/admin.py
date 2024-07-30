@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Post, PostView, Comment, Group, GroupPost, GroupMessage, Message, Notification
+from .models import User, Post, PostView, Comment, Group, GroupPost, GroupMessage, Message, Notification, Report
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
@@ -21,6 +21,17 @@ class PostViewAdmin(admin.ModelAdmin):
     search_fields = ('post__content', 'user__username')
     list_filter = ('viewed_at',)
     ordering = ('-viewed_at',)
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ('reporter', 'post', 'report_type', 'created_at', 'is_resolved')
+    list_filter = ('report_type', 'is_resolved', 'created_at')
+    search_fields = ('reporter__username', 'post__content', 'description')
+    actions = ['mark_resolved']
+
+    def mark_resolved(self, request, queryset):
+        queryset.update(is_resolved=True)
+    mark_resolved.short_description = "Mark selected reports as resolved"
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
@@ -67,3 +78,4 @@ class NotificationAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'content')
     list_filter = ('is_read', 'timestamp')
     ordering = ('-timestamp',)
+

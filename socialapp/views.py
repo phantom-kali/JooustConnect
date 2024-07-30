@@ -3,7 +3,7 @@ from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import User, Post, Group, Message, Notification, Comment, PostView, GroupPost, GroupMessage
+from .models import User, Post, Group, Message, Notification, Comment, PostView, GroupPost, GroupMessage, Report
 from .forms import UserRegistrationForm, PostForm, UserProfileForm, GroupForm, GroupPostForm
 from django.contrib.auth import login, get_user_model
 from django.db.models import Q
@@ -96,6 +96,31 @@ def create_post(request):
     else:
         form = PostForm()
     return render(request, 'socialapp/post_create.html', {'form': form})
+
+
+@login_required
+@require_POST
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id, user=request.user)
+    post.delete()
+    return JsonResponse({'status': 'success'})
+
+@login_required
+@require_POST
+def report_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    report_type = request.POST.get('report_type')
+    description = request.POST.get('description', '')
+
+    report = Report.objects.create(
+        reporter=request.user,
+        post=post,
+        report_type=report_type,
+        description=description
+    )
+
+    return JsonResponse({'status': 'success', 'message': 'Post reported successfully'})
+
 
 @login_required
 def messages(request):

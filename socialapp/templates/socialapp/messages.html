@@ -300,8 +300,10 @@
     function updateUserList(users) {
         const conversationList = document.getElementById('conversation-list');
         conversationList.innerHTML = '';
-        const uniqueUsers = Array.from(new Set(users.map(user => JSON.stringify(user))))
-            .map(userString => JSON.parse(userString));
+        const uniqueUsers = Array.from(new Set(users.map(user => user.id)))
+            .map(id => {
+                return users.find(user => user.id === id);
+            });
 
         uniqueUsers.forEach(user => {
             const userElement = createUserElement(user);

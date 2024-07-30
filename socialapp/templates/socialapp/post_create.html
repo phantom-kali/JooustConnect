@@ -8,23 +8,85 @@
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
+                
                 <div class="form-group">
                     {{ form.content.errors }}
                     {{ form.content }}
                 </div>
+                
                 <div class="form-group">
-                    {{ form.image.errors }}
-                    <label for="{{ form.image.id_for_label }}">Image (optional):</label>
-                    {{ form.image }}
+                    <label for="{{ form.image.id_for_label }}" class="d-block">Image (optional):</label>
+                    <div class="media-preview" id="imagePreviewContainer">
+                        <input type="file" id="{{ form.image.id_for_label }}" name="{{ form.image.html_name }}" class="form-control-file" onchange="previewImage(event)">
+                        <div class="image-frame d-none" id="imageFrame">
+                            <img id="imagePreview" src="" alt="Image preview" class="img-fluid">
+                            <button type="button" class="btn btn-danger mt-2" onclick="clearImage()">Clear</button>
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="form-group">
-                    {{ form.video.errors }}
-                    <label for="{{ form.video.id_for_label }}">Video (optional):</label>
-                    {{ form.video }}
+                    <label for="{{ form.video.id_for_label }}" class="d-block">Video (optional):</label>
+                    <div class="media-preview" id="videoPreviewContainer">
+                        <input type="file" id="{{ form.video.id_for_label }}" name="{{ form.video.html_name }}" class="form-control-file" onchange="previewVideo(event)">
+                        <div class="video-frame d-none" id="videoFrame">
+                            <video id="videoPreview" controls class="img-fluid">
+                                Your browser does not support the video tag.
+                            </video>
+                            <button type="button" class="btn btn-danger mt-2" onclick="clearVideo()">Clear</button>
+                        </div>
+                    </div>
                 </div>
+
                 <button type="submit" class="btn btn-primary mt-3">Post</button>
             </form>
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const imageFrame = document.getElementById('imageFrame');
+    const imagePreview = document.getElementById('imagePreview');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imageFrame.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function clearImage() {
+    document.getElementById('imagePreview').src = '';
+    document.getElementById('imageFrame').classList.add('d-none');
+    document.querySelector('input[type="file"][name="{{ form.image.html_name }}"]').value = '';
+}
+
+function previewVideo(event) {
+    const file = event.target.files[0];
+    const videoFrame = document.getElementById('videoFrame');
+    const videoPreview = document.getElementById('videoPreview');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            videoPreview.src = e.target.result;
+            videoFrame.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function clearVideo() {
+    document.getElementById('videoPreview').src = '';
+    document.getElementById('videoFrame').classList.add('d-none');
+    document.querySelector('input[type="file"][name="{{ form.video.html_name }}"]').value = '';
+}
+</script>
+{% endblock %}
 {% endblock %}
