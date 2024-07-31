@@ -146,8 +146,8 @@
 
     // Connect to the WebSocket
     const notificationSocket = new WebSocket(
-        'ws://' + window.location.host +
-        '/ws/notifications/'
+        'wss://' + window.location.host +
+        '/wss/notifications/'
     );
 
     notificationSocket.onmessage = function (e) {
@@ -160,7 +160,7 @@
 
     function showNotification(notification) {
         // Implement this function to display the notification in your UI
-        // For example, you could use the browser's Notification API:
+        // For example, you could use the browsser's Notification API:
         if (Notification.permission === "granted") {
             new Notification(notification.content);
         } else if (Notification.permission !== "denied") {
@@ -174,7 +174,7 @@
 
     function connectWebSocket(userId) {
         const roomName = [currentUserIdValue, userId].sort().join('_');
-        socket = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/`);
+        socket = new WebSocket(`wss://${window.location.host}/wss/chat/${roomName}/`);
 
         socket.onmessage = function (e) {
             const data = JSON.parse(e.data);

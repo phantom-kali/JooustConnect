@@ -159,8 +159,8 @@
 
     // Connect to the WebSocket
     const notificationSocket = new WebSocket(
-        'ws://' + window.location.host +
-        '/ws/notifications/'
+        'wss://' + window.location.host +
+        '/wss/notifications/'
     );
 
     notificationSocket.onmessage = function (e) {
@@ -188,7 +188,7 @@
     }
 
     function connectWebSocket(groupId) {
-        socket = new WebSocket(`ws://${window.location.host}/ws/group_chat/${groupId}/`);
+        socket = new WebSocket(`wss://${window.location.host}/wss/group_chat/${groupId}/`);
 
         socket.onopen = function (e) {
             console.log('WebSocket connection established');
