@@ -2,3 +2,4 @@ django
 daphne
 channels
 django-widget-tweaks
+python-dateutil
