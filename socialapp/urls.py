@@ -16,6 +16,8 @@ urlpatterns = [
     path('delete_post/<int:post_id>/', views.delete_post, name='delete_post'),
     path('report_post/<int:post_id>/', views.report_post, name='report_post'),
 
+    path('api/post/<int:post_id>/<str:detail_type>/', views.post_details, name='post_details'),
+
     path('premium-dashboard/', views.premium_dashboard, name='premium_dashboard'),
     path('post/<int:post_id>/viewers/', views.post_viewers, name='post_viewers'),
     path('purchase-premium/', views.purchase_premium, name='purchase_premium'),

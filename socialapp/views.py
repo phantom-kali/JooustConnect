@@ -65,20 +65,34 @@ def feed(request):
 @login_required
 @user_passes_test(is_premium)
 def premium_dashboard(request):
-    # Get the search query from the GET request
+    # Get the search query and filter from the GET request
     query = request.GET.get('query', '')
+    filter_by = request.GET.get('filter', '')
 
     # Get the user's posts
-    user_posts = Post.objects.filter(user=request.user)
+    user_posts = Post.objects.filter(user=request.user).select_related('user').prefetch_related('likes', 'comments')
 
     # Filter posts based on the search query
     if query:
         user_posts = user_posts.filter(content__icontains=query)
 
-    # Calculate statistics based on the filtered posts
+    # Apply sorting based on the filter
+    if filter_by == 'likes':
+        user_posts = user_posts.annotate(like_count=Count('likes')).order_by('-like_count')
+    elif filter_by == 'comments':
+        user_posts = user_posts.annotate(comment_count=Count('comments')).order_by('-comment_count')
+    elif filter_by == 'views':
+        user_posts = user_posts.order_by('-n_views')
+    else:
+        user_posts = user_posts.order_by('-created_at')
+
+    # Calculate statistics
     total_views = sum(post.n_views for post in user_posts)
     total_likes = sum(post.likes.count() for post in user_posts)
     total_comments = sum(post.comments.count() for post in user_posts)
+    
+    # Get course analytics
+    course_analytics = Post.objects.filter(user=request.user).values('user__course').annotate(post_count=Count('id'))
     
     context = {
         'total_posts': user_posts.count(),
@@ -86,10 +100,31 @@ def premium_dashboard(request):
         'total_likes': total_likes,
         'total_comments': total_comments,
         'posts': user_posts,
-        'query': query  # Include the query in the context to pre-fill the search box
+        'query': query,
+        'filter': filter_by,
+        'course_analytics': list(course_analytics)
     }
     return render(request, 'socialapp/premium_dashboard.html', context)
 
+@login_required
+@user_passes_test(is_premium)
+def post_details(request, post_id, detail_type):
+    post = get_object_or_404(Post, id=post_id, user=request.user)
+    
+    if detail_type == 'views':
+        details = PostView.objects.filter(post=post).values('user__username').annotate(count=Count('id'))
+        key = 'user__username'
+    elif detail_type == 'likes':
+        details = post.likes.values('username').annotate(count=Count('id'))
+        key = 'username'
+    elif detail_type == 'comments':
+        details = Comment.objects.filter(post=post).values('user__username').annotate(count=Count('id'))
+        key = 'user__username'
+    else:
+        return JsonResponse({'error': 'Invalid detail type'}, status=400)
+    
+    details_list = [{'username': item[key], 'count': item['count']} for item in details]
+    return JsonResponse(details_list, safe=False)
 
 def premium_status(request):
     if request.user.is_authenticated:

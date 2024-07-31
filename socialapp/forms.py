@@ -4,6 +4,7 @@ from .models import User, Post, Group, GroupPost
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput)
+    course = forms.CharField(max_length=100, required=False)
 
     class Meta:
         model = User
