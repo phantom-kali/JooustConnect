@@ -3,3 +3,4 @@ daphne
 channels
 django-widget-tweaks
 python-dateutil
+pillow
