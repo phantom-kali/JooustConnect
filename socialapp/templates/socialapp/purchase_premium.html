@@ -1,7 +1,7 @@
 {% extends 'socialapp/base.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <h2 class="mb-4">{% if is_renewal %}Renew{% else %}Upgrade to{% endif %} Premium</h2>
 
     <div class="mb-4">
@@ -9,7 +9,7 @@
             <p class="lead">Your current premium subscription will expire in <strong>{{ premium_days_left }} days</strong>.</p>
         {% else %}
             <p class="lead">Enjoy exclusive benefits including:</p>
-            <ul class="list-group">
+            <ul class="list-group mb-3">
                 <li class="list-group-item">Verification Check</li>
                 <li class="list-group-item">Boosted posts</li>
                 <li class="list-group-item">Detailed analytics</li>
@@ -18,19 +18,27 @@
         {% endif %}
     </div>
 
-    <p class="h4 mb-4">Premium subscription fee: <strong>Ksh 200 </strong> <br>
-    Pay Exact amount To: <strong>07-92-46-91-73</strong></p>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Premium subscription fee:</h5>
+            <p class="card-text h4"><strong>Ksh 200</strong></p>
+            <h5 class="card-title mt-3">Pay Exact amount To:</h5>
+            <p class="card-text h4"><strong>07-92-46-91-73</strong></p>
+        </div>
+    </div>
 
-    <div class="card p-4">
-        <h5 class="card-title mb-4">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</h5>
-        <form method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="mpesa_message" class="form-label">Enter your M-Pesa message [<strong>Replace</strong> 0792469173] with the number you paid with:</label>
-                <textarea name="mpesa_message" id="mpesa_message" class="form-control" rows="4" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</button>
-        </form>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title mb-4">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</h5>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="mpesa_message" class="form-label">Enter your M-Pesa message [<strong>Replace</strong> 0792469173] with the number you paid with:</label>
+                    <textarea name="mpesa_message" id="mpesa_message" class="form-control" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</button>
+            </form>
+        </div>
     </div>
 
     {% if messages %}

@@ -1,0 +1,4 @@
+django
+django-tweaks
+daphne
+django-widget-tweaks

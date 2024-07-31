@@ -2,10 +2,10 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1>Settings</h1>
-    <ul class="nav nav-tabs" id="settingsTab" role="tablist">
+    <h1 class="mb-3">Settings</h1>
+    <ul class="nav nav-tabs flex-column flex-sm-row" id="settingsTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="edit-profile-tab" data-bs-toggle="tab" data-bs-target="#edit-profile" type="button" role="tab" aria-controls="edit-profile" aria-selected="true">Edit Profile</button>
+            <button class="nav-link active w-100" id="edit-profile-tab" data-bs-toggle="tab" data-bs-target="#edit-profile" type="button" role="tab" aria-controls="edit-profile" aria-selected="true">Edit Profile</button>
         </li>
         <!-- Additional tabs can be added here -->
     </ul>
@@ -14,13 +14,13 @@
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="row">
-                    <div class="col-md-4">
-                        <div class="text-center mb-3">
+                    <div class="col-12 col-md-4 mb-3">
+                        <div class="text-center">
                             <img id="profilePicturePreview" src="{{ form.instance.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
                             <input type="file" name="profile_picture" id="profilePictureInput" class="form-control mt-2" accept="image/*">
                         </div>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-12 col-md-8">
                         <div class="mb-3">
                             {{ form.nickname.label_tag }} {{ form.nickname }}
                         </div>
@@ -39,7 +39,7 @@
                         <div class="mb-3">
                             {{ form.privacy_posts.label_tag }} {{ form.privacy_posts }}
                         </div>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
                     </div>
                 </div>
             </form>
