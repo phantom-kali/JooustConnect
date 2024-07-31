@@ -10,7 +10,7 @@ SECRET_KEY = 'django-insecure-$k29@3^!r6@#+#)heu)_$$by$70)!dou!e_8m^o^2nxnf41npg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://jooustconnect.onrender.com', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ['jooustconnect.onrender.com', '127.0.0.1', '0.0.0.0']
 CORS_ALLOWED_ORIGINS = ['https://jooustconnect.onrender.com', '0.0.0.0', '127.0.0.1']
 
 INSTALLED_APPS = [
