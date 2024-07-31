@@ -11,6 +11,10 @@ SECRET_KEY = 'django-insecure-$k29@3^!r6@#+#)heu)_$$by$70)!dou!e_8m^o^2nxnf41npg
 DEBUG = False
 
 ALLOWED_HOSTS = ['jooustconnect.onrender.com', '127.0.0.1', '0.0.0.0']
+CSRF_TRUSTED_ORIGINS = [
+    'https://jooustconnect.onrender.com',
+]
+
 CORS_ALLOWED_ORIGINS = ['https://jooustconnect.onrender.com', '0.0.0.0', '127.0.0.1']
 
 INSTALLED_APPS = [
@@ -22,7 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'socialapp',
     'channels',
-    'widget_tweaks'
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
