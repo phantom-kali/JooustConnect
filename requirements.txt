@@ -1,3 +1,4 @@
 django
 daphne
 channels
+django-widget-tweaks
