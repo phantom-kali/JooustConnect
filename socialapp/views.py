@@ -178,6 +178,7 @@ def purchase_premium(request):
                             transaction.save()
 
                             request.user.is_premium = True
+                            request.user.is_verified = True
                             if request.user.premium_expiry and request.user.premium_expiry > timezone.now():
                                 # If the user is renewing, add 30 days to their current expiry date
                                 request.user.premium_expiry += timezone.timedelta(days=30)
@@ -314,7 +315,7 @@ def report_post(request, post_id):
 
 
 @login_required
-def messages(request):
+def _messages(request):
     conversations = Message.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
     ).values('sender', 'receiver').distinct()

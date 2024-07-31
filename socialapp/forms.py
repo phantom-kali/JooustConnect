@@ -14,6 +14,13 @@ class UserRegistrationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['course'].required = True
         self.fields['year'].required = True
+        
+        # Suppress help texts
+        for field in self.fields.values():
+            field.help_text = ''
+        
+        # Set bio field to use TextInput widget
+        self.fields['bio'].widget = forms.TextInput(attrs={'placeholder': 'Your about'})
 
     def clean(self):
         cleaned_data = super().clean()

@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'socialapp',
     'channels',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [

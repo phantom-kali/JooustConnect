@@ -25,7 +25,7 @@ urlpatterns = [
     path('add-mpesa-transaction/', views.add_mpesa_transaction, name='add_mpesa_transaction'),
 
     path('search-users/', views.search_users, name='search_users'),
-    path('messages/', views.messages, name='messages'),
+    path('messages/', views._messages, name='messages'),
     path('get-messages/<int:user_id>/', views.get_messages, name='get_messages'),
     path('send-message/', views.send_message, name='send_message'),
     
