@@ -354,6 +354,8 @@ def get_messages(request, user_id):
         }
         for message in messages
     ]
+
+    for m in messages_data: print(m['content'], '\n')
     
     return JsonResponse({'messages': messages_data})
 

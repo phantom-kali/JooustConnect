@@ -10,6 +10,7 @@
         {% else %}
             <p class="lead">Enjoy exclusive benefits including:</p>
             <ul class="list-group">
+                <li class="list-group-item">Verification Check</li>
                 <li class="list-group-item">Boosted posts</li>
                 <li class="list-group-item">Detailed analytics</li>
                 <li class="list-group-item">View who's seen your posts</li>
@@ -17,14 +18,15 @@
         {% endif %}
     </div>
 
-    <p class="h4 mb-4">Premium subscription fee: <strong>Ksh 200 </strong></p>
+    <p class="h4 mb-4">Premium subscription fee: <strong>Ksh 200 </strong> <br>
+    Pay Exact amount To: <strong>07-92-46-91-73</strong></p>
 
     <div class="card p-4">
         <h5 class="card-title mb-4">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</h5>
         <form method="post">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="mpesa_message" class="form-label">Enter your M-Pesa message:</label>
+                <label for="mpesa_message" class="form-label">Enter your M-Pesa message [<strong>Replace</strong> 0792469173] with the number you paid with:</label>
                 <textarea name="mpesa_message" id="mpesa_message" class="form-control" rows="4" required></textarea>
             </div>
             <button type="submit" class="btn btn-primary">{% if is_renewal %}Renew{% else %}Activate{% endif %} Premium</button>

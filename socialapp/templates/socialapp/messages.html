@@ -132,19 +132,6 @@
         setupEventListeners();
     });
 
-    // Request notification permission on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        if (Notification.permission !== "granted") {
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    console.log("Notification permission granted.");
-                } else {
-                    console.log("Notification permission denied.");
-                }
-            });
-        }
-    });
-
     function setupEventListeners() {
         document.querySelectorAll('.user-conversation').forEach(element => {
             element.addEventListener('click', function () {
@@ -157,35 +144,6 @@
         document.getElementById('user-search').addEventListener('input', handleUserSearch);
     }
 
-    // Connect to the WebSocket
-    const notificationSocket = new WebSocket(
-        'ws://' + window.location.host +
-        '/ws/notifications/'
-    );
-
-    notificationSocket.onmessage = function (e) {
-        const data = JSON.parse(e.data);
-        if (data.type === 'notification') {
-            // Display the notification
-            showNotification(data.notification);
-        }
-    };
-
-    function showNotification(notification) {
-        // Check if permission has already been granted
-        if (Notification.permission === "granted") {
-            new Notification(notification.content);
-        } else if (Notification.permission !== "denied") {
-            // Request permission and show notification if granted
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    new Notification(notification.content);
-                }
-            });
-        } else {
-            console.log("Notification permission denied.");
-        }
-    }
     function connectWebSocket(userId) {
         const roomName = [currentUserIdValue, userId].sort().join('_');
         socket = new WebSocket(`ws://${window.location.host}/ws/chat/${roomName}/`);
@@ -300,10 +258,8 @@
     function updateUserList(users) {
         const conversationList = document.getElementById('conversation-list');
         conversationList.innerHTML = '';
-        const uniqueUsers = Array.from(new Set(users.map(user => user.id)))
-            .map(id => {
-                return users.find(user => user.id === id);
-            });
+        const uniqueUsers = Array.from(new Set(users.map(user => JSON.stringify(user))))
+            .map(userString => JSON.parse(userString));
 
         uniqueUsers.forEach(user => {
             const userElement = createUserElement(user);
@@ -330,7 +286,5 @@
         conversationList.innerHTML = originalUserListHTML;
         setupEventListeners();
     }
-
-
 </script>
 {% endblock %}

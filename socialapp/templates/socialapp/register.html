@@ -59,19 +59,14 @@
             <div class="mb-3">
                 <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
                 {% render_field form.profile_picture class="form-control" %}
-                <img id="profilePicPreview" src="#" alt="Profile Picture Preview" class="img-thumbnail mt-3" style="display: none; width: 150px; height: 150px; object-fit: cover;">
+                <img id="profilePicPreview" src="#" alt="Profile Picture Preview" class="img-thumbnail mt-3"
+                    style="display: none; width: 150px; height: 150px; object-fit: cover;">
             </div>
 
             <!-- Bio Field -->
             <div class="mb-3">
                 <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
                 {% render_field form.bio class="form-control" %}
-            </div>
-
-            <!-- User Type Field -->
-            <div class="mb-3">
-                <label for="{{ form.user_type.id_for_label }}" class="form-label">User Type</label>
-                {% render_field form.user_type class="form-control" readonly=True %}
             </div>
 
             <button type="submit" class="btn btn-primary mt-3">Register</button>
@@ -102,7 +97,6 @@
         passwordInput.addEventListener('input', checkPasswordStrength);
     });
 
-    // JavaScript for profile picture preview
     document.addEventListener('DOMContentLoaded', function () {
         const profilePicInput = document.querySelector('input[name="profile_picture"]');
         const profilePicPreview = document.getElementById('profilePicPreview');
@@ -121,10 +115,18 @@
             }
         });
     });
+
 </script>
 
 <!-- CSS for password requirements feedback -->
 <style>
+    #profilePicPreview {
+        border-radius: 50%;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+    }
+
     .password-requirement {
         margin-bottom: 5px;
     }

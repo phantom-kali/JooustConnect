@@ -126,25 +126,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 
     {% block extra_js %}
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            function loadNotifications() {
-                fetch('/notifications/')
-                    .then(response => response.json())
-                    .then(data => {
-                        const notificationCount = document.getElementById('notificationCount');
-                        if (data.notifications.length > 0) {
-                            notificationCount.textContent = data.notifications.length;
-                        } else {
-                            notificationCount.textContent = '';
-                        }
-                    });
-            }
-
-            loadNotifications(); // Load notifications when the page loads
-            setInterval(loadNotifications, 30000); // Refresh notifications every 30 seconds
-        });
-    </script>
     {% endblock %}
 </body>
 
