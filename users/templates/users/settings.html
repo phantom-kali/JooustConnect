@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Settings</h1>
+    <ul class="nav nav-tabs mb-3" id="settingsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="edit-profile-tab" data-bs-toggle="tab" data-bs-target="#edit-profile" type="button" role="tab" aria-controls="edit-profile" aria-selected="true">Edit Profile</button>
+        </li>
+        <!-- Additional tabs can be added here -->
+    </ul>
+    <div class="tab-content" id="settingsTabContent">
+        <div class="tab-pane fade show active" id="edit-profile" role="tabpanel" aria-labelledby="edit-profile-tab">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="text-center">
+                            <img id="profilePicturePreview" 
+                                 src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://via.placeholder.com/150{% endif %}" 
+                                 alt="Profile Picture" 
+                                 class="img-fluid rounded-circle mb-3" 
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                            <input type="file" name="profile_picture" id="profilePictureInput" class="form-control" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="col-lg-8 col-md-6">
+                        <div class="mb-3">
+                            {{ form.nickname.label_tag }}
+                            {{ form.nickname }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.course.label_tag }}
+                            {{ form.course }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.year.label_tag }}
+                            {{ form.year }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.bio.label_tag }}
+                            {{ form.bio }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.privacy_dms.label_tag }}
+                            {{ form.privacy_dms }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.privacy_posts.label_tag }}
+                            {{ form.privacy_posts }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- Additional tab content can be added here -->
+    </div>
+</div>
+<script>
+    document.getElementById('profilePictureInput').addEventListener('change', function(event) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('profilePicturePreview').src = e.target.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    });
+</script>
+{% endblock %}

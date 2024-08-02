@@ -1,0 +1,7 @@
+django
+daphne
+channels
+django-widget-tweaks
+python-dateutil
+pillow
+django-cors-headers
