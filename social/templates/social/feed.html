@@ -39,13 +39,24 @@
         .create-post-button {
             display: block;
             position: fixed;
-            bottom: 20px;
+            top: 50%;
             right: 20px;
-            z-index: 1001;
+            transform: translateY(-50%);
+            z-index: 1031;
+            /* Higher than navbar to ensure it's clickable */
+            transition: opacity 0.3s ease-in-out;
         }
 
+        .create-post-button.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+
         .create-post-form {
-            display: none;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .create-post-form.expanded-view {
@@ -54,19 +65,69 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #fff;
-            z-index: 1002;
+            background-color: var(--bg-color);
+            z-index: 1032;
             padding: 20px;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .create-post-form.expanded-view .card {
-            box-shadow: none;
-            border: none;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .create-post-form.expanded-view .card-body {
-            padding: 0;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .create-post-form.expanded-view form {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .create-post-form.expanded-view .form-group {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .create-post-form.expanded-view textarea {
+            flex-grow: 1;
+        }
+
+        .create-post-form textarea {
+            background-color: var(--input-bg);
+            color: var(--input-color);
+            border-color: var(--input-border);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .create-post-form button {
+            background-color: var(--navbar-bg);
+            color: var(--navbar-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dark-theme .create-post-form {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .dark-theme .create-post-form textarea {
+            background-color: #444;
+            color: #fff;
+            border-color: #555;
+        }
+
+        .dark-theme .create-post-form button {
+            background-color: #007bff;
+            color: #fff;
         }
     }
 
@@ -109,7 +170,9 @@
                     <img src="https://via.placeholder.com/40" alt="{{ post.user.username }}"
                         class="rounded-circle mr-3">
                     {% endif %}
-                    <h5 class="mb-0 ml-2">{{ post.user.username }}</h5>
+                    <h5 class="mb-0 ml-2">
+                        <a href="{% url 'profile' username=post.user.username %}">{{ post.user.username }}</a>
+                    </h5>
                     {% if post.user.is_verified %}
                     <span class="verified-badge">✓</span>
                     {% endif %}
@@ -214,120 +277,7 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-
-        // Delete post
-        document.querySelectorAll('.delete-post').forEach(function (button) {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                var postId = this.getAttribute('data-post-id');
-                if (confirm('Are you sure you want to delete this post?')) {
-                    fetch('/delete_post/' + postId + '/', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrf-token]').content,
-                        },
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                document.querySelector('[data-post-id="' + postId + '"]').remove();
-                            }
-                        });
-                }
-            });
-        });
-
-        // Report post
-        document.querySelectorAll('.report-post').forEach(function (button) {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                var postId = this.getAttribute('data-post-id');
-                var reportType = prompt("Please enter the report type (spam, inappropriate, harassment, or other):");
-                var description = prompt("Please provide a brief description of the issue:");
-
-                if (reportType) {
-                    fetch('/report_post/' + postId + '/', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrf-token]').content,
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: 'report_type=' + encodeURIComponent(reportType) + '&description=' + encodeURIComponent(description)
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                alert(data.message);
-                            }
-                        });
-                }
-            });
-        });
-
-
-        const createPostButton = document.querySelector('.create-post-button');
-        const createPostForm = document.querySelector('.create-post-form');
-
-        createPostButton.addEventListener('click', function () {
-            createPostForm.classList.add('expanded-view');
-            createPostForm.style.display = 'block';
-            this.style.display = 'none';
-
-            // Scroll to the top of the form
-            window.scrollTo(0, 0);
-
-            // Focus on the textarea
-            setTimeout(() => {
-                createPostForm.querySelector('textarea').focus();
-            }, 100);
-        });
-
-        // Add a close button to the form if it doesn't exist
-        let closeButton = createPostForm.querySelector('.close-button');
-        if (!closeButton) {
-            closeButton = document.createElement('button');
-            closeButton.className = 'btn btn-secondary close-button';
-            closeButton.innerHTML = '&times;'; // Use × symbol instead of text
-            createPostForm.insertBefore(closeButton, createPostForm.firstChild);
-        }
-
-        closeButton.addEventListener('click', function () {
-            createPostForm.classList.remove('expanded-view');
-            createPostForm.style.display = 'none';
-            createPostButton.style.display = 'block';
-        });
-
-        // Handle viewport changes (including keyboard appearance)
-        let viewportHeight = window.innerHeight;
-        window.addEventListener('resize', function () {
-            if (window.innerHeight < viewportHeight) {
-                // Keyboard likely appeared
-                createPostForm.style.height = 'auto';
-                createPostForm.style.bottom = 'auto';
-            } else {
-                // Keyboard likely disappeared
-                createPostForm.style.height = '100%';
-                createPostForm.style.bottom = '0';
-            }
-            viewportHeight = window.innerHeight;
-        });
-
-        // Initially hide the form on smaller screens
-        function adjustFormVisibility() {
-            if (window.innerWidth <= 768) {
-                createPostForm.style.display = 'none';
-                createPostButton.style.display = 'block';
-            } else {
-                createPostForm.style.display = 'block';
-                createPostButton.style.display = 'none';
-            }
-        }
-
-        // Call on load and on window resize
-        adjustFormVisibility();
-        window.addEventListener('resize', adjustFormVisibility);
-
-        // Function to get CSRF token from cookies
+        // Utility functions
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -343,11 +293,84 @@
             return cookieValue;
         }
 
-        // Create the Intersection Observer
-        let observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const postId = entry.target.dataset.postId;
+        // Create Post Form Functionality
+        const createPostButton = document.querySelector('.create-post-button');
+        const createPostForm = document.querySelector('.create-post-form');
+        let lastScrollTop = 0;
+
+        function toggleCreateButton() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                createPostButton.classList.add('hidden');
+            } else {
+                createPostButton.classList.remove('hidden');
+            }
+            lastScrollTop = scrollTop;
+        }
+
+        window.addEventListener('scroll', toggleCreateButton);
+
+        createPostButton.addEventListener('click', function () {
+            createPostForm.classList.add('expanded-view');
+            createPostForm.style.display = 'flex';
+            this.classList.add('hidden');
+            setTimeout(() => createPostForm.querySelector('textarea').focus(), 100);
+        });
+
+        let closeButton = createPostForm.querySelector('.close-button');
+        if (!closeButton) {
+            closeButton = document.createElement('button');
+            closeButton.className = 'btn btn-secondary close-button';
+            closeButton.innerHTML = '&times;';
+            createPostForm.insertBefore(closeButton, createPostForm.firstChild);
+        }
+
+        closeButton.addEventListener('click', function () {
+            createPostForm.classList.remove('expanded-view');
+            createPostForm.style.display = 'none';
+            createPostButton.classList.remove('hidden');
+        });
+
+        function adjustFormVisibility() {
+            if (window.innerWidth <= 768) {
+                createPostForm.style.display = 'none';
+                createPostButton.classList.remove('hidden');
+            } else {
+                createPostForm.style.display = 'block';
+                createPostButton.classList.add('hidden');
+            }
+        }
+
+        adjustFormVisibility();
+        window.addEventListener('resize', adjustFormVisibility);
+
+        // Ensure form stays visible when keyboard appears on mobile
+        let viewportHeight = window.innerHeight;
+        window.addEventListener('resize', function () {
+            if (window.innerHeight < viewportHeight) {
+                createPostForm.style.height = 'auto';
+                createPostForm.style.bottom = '0';
+            } else {
+                createPostForm.style.height = '100%';
+            }
+            viewportHeight = window.innerHeight;
+        });
+
+        // Post Interaction Functionality
+        const posts = document.querySelectorAll('.post-card');
+
+        posts.forEach(post => {
+            const postId = post.dataset.postId;
+            const likeButton = post.querySelector('.like-button');
+            const commentButton = post.querySelector('.comment-button');
+            const commentSection = post.querySelector('.comment-section');
+            const commentForm = post.querySelector('.comment-form');
+            const deleteButton = post.querySelector('.delete-post');
+            const reportButton = post.querySelector('.report-post');
+
+            // View Increment
+            let observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
                     fetch(`/post/${postId}/increment_view/`, {
                         method: 'POST',
                         headers: {
@@ -357,24 +380,17 @@
                     })
                         .then(response => response.json())
                         .then(data => {
-                            entry.target.querySelector('.views-count').textContent = data.n_views;
+                            post.querySelector('.views-count').textContent = data.n_views;
                         })
                         .catch(error => console.error('Error:', error));
-                    // Unobserve after incrementing the view count
-                    observer.unobserve(entry.target);
+                    observer.unobserve(post);
                 }
-            });
-        }, { threshold: 0.5 }); // Adjust threshold as needed
+            }, { threshold: 0.5 });
 
-        // Observe each post
-        document.querySelectorAll('.post-card').forEach(post => {
             observer.observe(post);
-        });
 
-        // Like button functionality
-        document.querySelectorAll('.like-button').forEach(button => {
-            button.addEventListener('click', function () {
-                const postId = this.dataset.postId;
+            // Like Functionality
+            likeButton.addEventListener('click', function () {
                 fetch(`/post/${postId}/like/`, {
                     method: 'POST',
                     headers: {
@@ -388,38 +404,20 @@
                     })
                     .catch(error => console.error('Error:', error));
             });
-        });
 
-        // Comment button functionality
-        document.querySelectorAll('.comment-button').forEach(button => {
-            button.addEventListener('click', function () {
-                const postId = this.dataset.postId;
-                const commentSection = this.closest('.card').querySelector('.comment-section');
+            // Comment Functionality
+            commentButton.addEventListener('click', function () {
                 const commentsCount = parseInt(this.querySelector('.comments-count').textContent);
-
                 if (commentsCount >= 4) {
                     commentSection.classList.add('expanded-view');
                 } else {
                     commentSection.classList.remove('expanded-view');
                 }
-
                 commentSection.style.display = commentSection.style.display === 'none' ? 'block' : 'none';
             });
-        });
 
-        // Close expanded comment section functionality
-        document.querySelectorAll('.close-comments').forEach(button => {
-            button.addEventListener('click', function () {
-                const commentSection = this.closest('.comment-section');
-                commentSection.style.display = 'none';
-            });
-        });
-
-        // Update comment form functionality
-        document.querySelectorAll('.comment-form').forEach(form => {
-            form.addEventListener('submit', function (e) {
+            commentForm.addEventListener('submit', function (e) {
                 e.preventDefault();
-                const postId = this.dataset.postId;
                 const content = this.querySelector('textarea[name="content"]').value;
 
                 fetch(`/post/${postId}/comment/`, {
@@ -433,7 +431,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            const commentsList = this.closest('.card').querySelector('.comments-list');
+                            const commentsList = post.querySelector('.comments-list');
                             const newComment = document.createElement('div');
                             newComment.className = 'comment';
                             newComment.innerHTML = `
@@ -442,16 +440,68 @@
                         `;
                             commentsList.prepend(newComment);
                             this.reset();
-                            const commentsCountElement = this.closest('.card').querySelector('.comments-count');
-                            commentsCountElement.textContent = data.n_comments;
+                            post.querySelector('.comments-count').textContent = data.n_comments;
 
-                            // Check if we need to switch to expanded view
                             if (data.n_comments >= 4) {
-                                this.closest('.comment-section').classList.add('expanded-view');
+                                commentSection.classList.add('expanded-view');
                             }
                         }
                     })
                     .catch(error => console.error('Error:', error));
+            });
+
+            // Delete Post
+            if (deleteButton) {
+                deleteButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    if (confirm('Are you sure you want to delete this post?')) {
+                        fetch('/delete_post/' + postId + '/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                            },
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    post.remove();
+                                }
+                            });
+                    }
+                });
+            }
+
+            // Report Post
+            if (reportButton) {
+                reportButton.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var reportType = prompt("Please enter the report type (spam, inappropriate, harassment, or other):");
+                    var description = prompt("Please provide a brief description of the issue:");
+
+                    if (reportType) {
+                        fetch('/report_post/' + postId + '/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: 'report_type=' + encodeURIComponent(reportType) + '&description=' + encodeURIComponent(description)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    alert(data.message);
+                                }
+                            });
+                    }
+                });
+            }
+        });
+
+        // Close expanded comment sections
+        document.querySelectorAll('.close-comments').forEach(button => {
+            button.addEventListener('click', function () {
+                this.closest('.comment-section').style.display = 'none';
             });
         });
     });

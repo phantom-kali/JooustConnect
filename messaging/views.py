@@ -1,11 +1,14 @@
 import json
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+
+from users.models import User
 from .models import Message
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
+from notifications.models import Notification
 
 
 @login_required
@@ -53,6 +56,14 @@ def poll_messages(request, user_id):
 
     return JsonResponse({'messages': data})
 
+def create_message_notification(user, message_type, related_id, sender_name):
+    content = f"New message from {sender_name}"
+    Notification.objects.create(
+        user=user,
+        content=content,
+        notification_type=message_type,
+        related_id=related_id
+    )
 
 @csrf_exempt
 @login_required
@@ -63,11 +74,14 @@ def send_message(request):
             content = data.get('content')
             receiver_id = data.get('receiver_id')
             if content and receiver_id:
+                receiver = User.objects.get(id=receiver_id)  # Get the receiver user object
                 message = Message.objects.create(
                     sender=request.user,
                     receiver_id=receiver_id,
                     content=content
                 )
+                # Create notification for the receiver
+                create_message_notification(receiver, 'DM', message.id, request.user.username)
                 return JsonResponse({
                     'status': 'ok', 
                     'id': message.id,
@@ -75,13 +89,12 @@ def send_message(request):
                 })
             else:
                 return JsonResponse({'status': 'error', 'message': 'Missing content or receiver_id'}, status=400)
-        except json.JSONDecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        except (json.JSONDecodeError, User.DoesNotExist):
+            return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
-
 @login_required
-def messages(request):
+def messages(request, user_id=None):
     conversations = Message.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
     ).values('sender', 'receiver').distinct()
@@ -93,4 +106,12 @@ def messages(request):
         else:
             users.append(get_user_model().objects.get(id=conv['sender']))
     
-    return render(request, 'messaging/messages.html', {'users': users})
+    selected_user = None
+    if user_id:
+        selected_user = get_user_model().objects.get(id=user_id)
+
+    return render(request, 'messaging/messages.html', {
+        'users': users,
+        'selected_user': selected_user,
+    })
+

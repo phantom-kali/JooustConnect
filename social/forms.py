@@ -6,6 +6,7 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ['content', 'image', 'video']
         widgets = {
-            'content': forms.Textarea(attrs={'rows': 3, 'placeholder': "What's on your mind?"}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': "What's on your mind?"}),
+            'image': forms.FileInput(attrs={'class': 'form-control-file'}),
+            'video': forms.FileInput(attrs={'class': 'form-control-file'}),
         }
-    

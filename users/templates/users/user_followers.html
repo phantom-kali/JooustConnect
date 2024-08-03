@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ user.username }}'s Followers</h2>
+    <div class="list-group">
+        {% for follower in followers %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    {% if follower.profile_picture %}
+                    <img src="{{ follower.profile_picture.url }}" alt="{{ follower.username }}"
+                        class="rounded-circle mr-3" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                    <img src="https://via.placeholder.com/40" alt="{{ follower.username }}"
+                        class="rounded-circle mr-3">
+                    {% endif %}
+                    <h5 class="mb-0 ml-2">
+                        <a href="{% url 'profile' username=follower.username %}">{{ follower.username }}</a>
+                    </h5>
+                    {% if follower.is_verified %}
+                    <span class="verified-badge ml-1">✓</span>
+                    {% endif %}
+                </div>
+                {% if request.user != follower %}
+                    {% if follower in request.user.following.all %}
+                        <form action="{% url 'unfollow_user' user_id=follower.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary btn-sm">Unfollow</button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'follow_user' user_id=follower.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary btn-sm">Follow</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% empty %}
+            <div class="list-group-item">No followers</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

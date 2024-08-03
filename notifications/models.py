@@ -1,8 +1,27 @@
+# from django.db import models
+from django.urls import reverse
+# from users.models import User
+
+from django.contrib.auth import get_user_model
 from django.db import models
-from users.models import User
+
+User = get_user_model()
 
 class Notification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    USER_CHOICES = (
+        ('DM', 'Direct Message'),
+        ('GROUP', 'Group Message'),
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     content = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+    notification_type = models.CharField(max_length=5, choices=USER_CHOICES, default='DM')
+    related_id = models.IntegerField()  # This will store the DM or Group ID
+
+    def get_redirect_url(self):
+        if self.notification_type == 'DM':
+            return f'/messaging/{self.related_id}/'
+        elif self.notification_type == 'GROUP':
+            return f'/groups/{self.related_id}/'
+        return reverse('notifications')  # Default redirect

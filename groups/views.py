@@ -2,6 +2,8 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+
+from notifications.models import Notification
 from .models import Group, GroupMessage
 from .forms import GroupForm, GroupPostForm
 from django.views.decorators.http import require_POST
@@ -108,6 +110,20 @@ def poll_group_messages(request, group_id):
 
     return JsonResponse({'messages': data})
 
+
+def create_message_notification(user, message_type, related_id, sender_name, group_name=None):
+    if message_type == 'GROUP':
+        content = f"New message from {sender_name} in group {group_name}"
+    else:
+        content = f"New message from {sender_name}"
+    
+    Notification.objects.create(
+        user=user,
+        content=content,
+        notification_type=message_type,
+        related_id=related_id
+    )
+
 @csrf_exempt
 @login_required
 def send_group_message(request):
@@ -123,6 +139,9 @@ def send_group_message(request):
                     group=group,
                     content=content
                 )
+                # Create notifications for all group members except the sender
+                for member in group.members.exclude(id=request.user.id):
+                    create_message_notification(member, 'GROUP', group.id, request.user.username, group.name)
                 return JsonResponse({
                     'status': 'ok', 
                     'id': message.id,
@@ -134,3 +153,13 @@ def send_group_message(request):
             return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
 
+
+@login_required
+def redirect_to_group(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    if notification.notification_type == 'GROUP':
+        group_id = notification.related_id
+        return redirect('group_messages', group_id=group_id)
+    else:
+        # Handle other notification types or return a default redirect
+        return redirect('groups')

@@ -9,6 +9,8 @@ class User(AbstractUser):
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True)
     bio = models.TextField(blank=True)
 
+    followers = models.ManyToManyField('self', symmetrical=False, related_name='following')
+
     is_verified = models.BooleanField(default=False)
     is_premium = models.BooleanField(default=False)
     premium_expiry = models.DateTimeField(null=True, blank=True)

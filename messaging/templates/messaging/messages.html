@@ -3,22 +3,25 @@
 {% block extra_css %}
 <style>
     .messages-container {
-        height: 100vh;
+        height: calc(100vh - 60px);
         display: flex;
         flex-direction: column;
+        max-width: 100%;
+        margin: 0 auto;
     }
 
     .conversation-list {
         width: 100%;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid var(--card-border);
         overflow-y: auto;
         max-height: 30vh;
     }
 
     .chat-header {
         padding: 10px;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid var(--card-border);
         font-weight: bold;
+        background-color: var(--card-bg);
     }
 
     .chat-window {
@@ -36,32 +39,63 @@
     }
 
     .message-input {
-        border-top: 1px solid #dee2e6;
+        border-top: 1px solid var(--card-border);
         padding: 10px;
         position: fixed;
-        bottom: 0;
+        bottom: 60px;
         left: 0;
         right: 0;
-        background-color: white;
+        background-color: var(--bg-color);
         width: 100%;
     }
 
     .user-search {
         padding: 10px;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid var(--card-border);
         display: flex;
         align-items: center;
     }
 
-    @media (min-width: 768px) {
+    .message {
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        max-width: 70%;
+        position: relative;
+    }
+
+    .message.sent {
+        background-color: #005c4b;
+        color: white;
+        align-self: flex-end;
+        margin-left: auto;
+    }
+
+    .message.received {
+        background-color: #202c33;
+        color: white;
+        align-self: flex-start;
+    }
+
+    .message .timestamp {
+        font-size: 0.75em;
+        color: rgba(255, 255, 255, 0.7);
+        position: absolute;
+        bottom: 3px;
+        right: 7px;
+    }
+
+    @media (min-width: 992px) {
         .messages-container {
             flex-direction: row;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .conversation-list {
             width: 300px;
             max-height: none;
-            border-right: 1px solid #dee2e6;
+            border-right: 1px solid var(--card-border);
             border-bottom: none;
         }
 
@@ -71,6 +105,8 @@
 
         .message-input {
             position: absolute;
+            bottom: 0;
+            width: 100%;
         }
     }
 </style>
@@ -133,6 +169,7 @@
         setupEventListeners();
     });
 
+
     function setupEventListeners() {
         document.querySelectorAll('.user-conversation').forEach(element => {
             element.addEventListener('click', function () {
@@ -174,7 +211,7 @@
 
     function sendMessage(e) {
         e.preventDefault();
-        const content = document.getElementById('message-content').value;
+        const content = document.getElementById('message-content').value.trim();
         if (content && currentUserId) {
             fetch('/messaging/send-message/', {
                 method: 'POST',
@@ -209,7 +246,7 @@
             .then(response => response.json())
             .then(data => {
                 data.messages.forEach(message => {
-                    if (message.id !== lastSentMessageId) {
+                    if (message.id !== lastSentMessageId && message.sender !== currentUserIdValue) {
                         appendMessage(message);
                         lastMessageId = Math.max(lastMessageId, message.id);
                     }
@@ -224,20 +261,19 @@
     function appendMessage(message) {
         const messagesContainer = document.getElementById('chat-messages');
         const messageElement = document.createElement('div');
-        messageElement.className = `message ${message.sender == currentUserIdValue ? 'text-right' : ''}`;
+        messageElement.className = `message ${message.sender == currentUserIdValue ? 'sent' : 'received'}`;
 
         let formattedDate = 'Invalid Date';
         if (message.timestamp) {
             const date = new Date(message.timestamp);
             if (!isNaN(date.getTime())) {
-                formattedDate = date.toLocaleString();
+                formattedDate = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             }
         }
 
         messageElement.innerHTML = `
-            <p><strong>${message.sender == currentUserIdValue ? 'You' : currentUsername}</strong></p>
             <p>${message.content}</p>
-            <small class="text-muted">${formattedDate}</small>
+            <span class="timestamp">${formattedDate}</span>
         `;
         messagesContainer.appendChild(messageElement);
     }
@@ -248,7 +284,7 @@
     }
 
     function searchUsers() {
-        const query = document.getElementById('user-search').value;
+        const query = document.getElementById('user-search').value.trim();
         if (query.length > 2) {
             fetch(`/users/search-users/?query=${encodeURIComponent(query)}`)
                 .then(response => response.json())
@@ -261,9 +297,9 @@
     }
 
     function handleUserSearch() {
-        if (this.value.length === 0) {
+        if (this.value.trim().length === 0) {
             displayOriginalUserList();
-        } else {
+        } else if (this.value.trim().length > 2) {
             searchUsers();
         }
     }
@@ -285,9 +321,9 @@
         userElement.className = 'p-3 border-bottom user-conversation';
         userElement.dataset.userId = user.id;
         userElement.innerHTML = `
-        <img src="${user.profile_picture || 'https://via.placeholder.com/40'}" alt="${user.username}" class="rounded-circle mr-2" style="width: 40px; height: 40px; object-fit: cover;">
-        <span>${user.username}</span>
-    `;
+            <img src="${user.profile_picture || 'https://via.placeholder.com/40'}" alt="${user.username}" class="rounded-circle mr-2" style="width: 40px; height: 40px; object-fit: cover;">
+            <span>${user.username}</span>
+        `;
         userElement.addEventListener('click', function () {
             loadMessages(user.id, user.username);
         });

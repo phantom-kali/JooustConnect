@@ -11,4 +11,13 @@ urlpatterns = [
     path('premium-dashboard/', views.premium_dashboard, name='premium_dashboard'),
     path('purchase-premium/', views.purchase_premium, name='purchase_premium'),
     path('add-mpesa-transaction/', views.add_mpesa_transaction, name='add_mpesa_transaction'),
+
+    path('profile/<str:username>/', views.profile, name='profile'),
+    path('profile/<str:username>/edit/', views.edit_profile, name='edit_profile'),
+    path('follow/<int:user_id>/', views.follow_user, name='follow_user'),
+    path('unfollow/<int:user_id>/', views.unfollow_user, name='unfollow_user'),
+
+    path('profile/<str:username>/followers/', views.user_followers, name='user_followers'),
+    path('profile/<str:username>/following/', views.user_following, name='user_following'),
+
 ]

@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from .models import User, MpesaTransaction
@@ -167,6 +167,50 @@ def search_users(request):
 
 
 @login_required
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
+    followers_count = user.followers.count()
+    following_count = user.following.count()
+    context = {
+        'user': user,
+        'followers_count': followers_count,
+        'following_count': following_count
+    }
+    return render(request, 'users/profile.html', context)
+
+
+@login_required
+def edit_profile(request, username):
+    user = get_object_or_404(User, username=username)
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile', username=user.username)
+    else:
+        form = UserProfileForm(instance=user)
+
+    return render(request, 'users/edit_profile.html', {'user': user, 'form': form})
+
+
+@login_required
+def follow_user(request, user_id):
+    user_to_follow = get_object_or_404(User, id=user_id)
+    if request.user != user_to_follow:
+        request.user.following.add(user_to_follow)
+        user_to_follow.followers.add(request.user)
+    return redirect(request.META.get('HTTP_REFERER', 'profile', username=user_to_follow.username))
+
+@login_required
+def unfollow_user(request, user_id):
+    user_to_unfollow = get_object_or_404(User, id=user_id)
+    if request.user != user_to_unfollow:
+        request.user.following.remove(user_to_unfollow)
+        user_to_unfollow.followers.remove(request.user)
+    return redirect(request.META.get('HTTP_REFERER', 'profile', username=user_to_unfollow.username))
+
+@login_required
 def settings(request):
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
@@ -179,4 +223,20 @@ def settings(request):
     return render(request, 'users/settings.html', {'form': form})
 
 
+@login_required
+def user_followers(request, username):
+    user = get_object_or_404(User, username=username)
+    followers = user.followers.all()
+    return render(request, 'users/user_followers.html', {
+        'user': user,
+        'followers': followers,
+    })
 
+@login_required
+def user_following(request, username):
+    user = get_object_or_404(User, username=username)
+    following = user.following.all()
+    return render(request, 'users/user_following.html', {
+        'user': user,
+        'following': following,
+    })

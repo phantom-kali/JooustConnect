@@ -16,3 +16,27 @@ def mark_notification_read(request, notification_id):
     notification.save()
     return JsonResponse({'status': 'success'})
 
+@login_required
+def mark_all_notifications_read(request):
+    if request.method == 'POST':
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=405)
+
+@login_required
+def poll_notifications(request):
+    last_id = request.GET.get('last_id', 0)
+    notifications = Notification.objects.filter(user=request.user, id__gt=last_id).order_by('id')
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    
+    return JsonResponse({
+        'notifications': [
+            {
+                'id': n.id,
+                'content': n.content,
+                'timestamp': n.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+                'redirect_url': n.get_redirect_url(),
+            } for n in notifications
+        ],
+        'unread_count': unread_count
+    })
