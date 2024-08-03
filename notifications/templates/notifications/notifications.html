@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Notifications</h1>
+    <br>
+    
+    <!-- Unread Notifications -->
+    <h2 class="d-flex justify-content-between align-items-center">
+        Unread Notifications
+        <button id="markAllAsRead" class="btn btn-primary btn-sm">Mark All as Read</button>
+    </h2>
+    <div class="list-group" id="unreadNotifications">
+        {% for notification in notifications %}
+            {% if not notification.is_read %}
+                <div class="list-group-item d-flex justify-content-between align-items-center" id="notification-{{ notification.id }}">
+                    <a href="{{ notification.get_redirect_url }}" class="flex-grow-1 text-decoration-none text-dark">
+                        <div>
+                            {{ notification.content }}
+                            <small class="text-muted">{{ notification.timestamp }}</small>
+                        </div>
+                    </a>
+                    <button class="btn btn-primary btn-sm ml-2" onclick="markAsRead({{ notification.id }})">Mark as Read</button>
+                </div>
+            {% endif %}
+        {% empty %}
+            <div class="list-group-item">No unread notifications</div>
+        {% endfor %}
+    </div>
+
+    <!-- Read Notifications -->
+    <h2 class="mt-4">Read Notifications</h2>
+    <div class="list-group" id="readNotifications">
+        {% for notification in notifications %}
+            {% if notification.is_read %}
+                <div class="list-group-item d-flex justify-content-between align-items-center" id="notification-{{ notification.id }}">
+                    <a href="{{ notification.get_redirect_url }}" class="flex-grow-1 text-decoration-none text-dark">
+                        <div>
+                            {{ notification.content }}
+                            <small class="text-muted">{{ notification.timestamp }}</small>
+                        </div>
+                    </a>
+                    <span class="badge bg-success">Read</span>
+                </div>
+            {% endif %}
+        {% empty %}
+            <div class="list-group-item">No read notifications</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/notifications/mark-read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            moveNotificationToRead(notificationId);
+        } else {
+            alert('Failed to mark notification as read.');
+        }
+    });
+}
+
+function moveNotificationToRead(notificationId) {
+    const notificationElement = document.getElementById(`notification-${notificationId}`);
+    notificationElement.querySelector('button').replaceWith(
+        Object.assign(document.createElement('span'), {
+            className: 'badge bg-success',
+            textContent: 'Read'
+        })
+    );
+    // Move the notification to the read section
+    document.getElementById('readNotifications').appendChild(notificationElement);
+}
+
+document.getElementById('markAllAsRead').addEventListener('click', function() {
+    fetch('/notifications/mark-all-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const unreadNotifications = document.querySelectorAll('#unreadNotifications .list-group-item');
+            unreadNotifications.forEach(notification => {
+                const notificationId = notification.id.split('-')[1];
+                moveNotificationToRead(notificationId);
+            });
+        } else {
+            alert('Failed to mark all notifications as read.');
+        }
+    });
+});
+</script>
+{% endblock %}

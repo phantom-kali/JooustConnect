@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Premium Dashboard</h2>
+
+    <div class="row">
+        <!-- Summary Section -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Overall Summary</h5>
+                    <p class="card-text">Total Posts: <strong>{{ total_posts }}</strong></p>
+                    <p class="card-text">Total Views: <strong>{{ total_views }}</strong></p>
+                    <p class="card-text">Total Likes: <strong>{{ total_likes }}</strong></p>
+                    <p class="card-text">Total Comments: <strong>{{ total_comments }}</strong></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Analytics Section -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Analytics by Course</h5>
+                    <div id="courseAnalyticsChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="mb-4">Your Posts</h3>
+
+    <!-- Search and Filter Form -->
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" name="query" value="{{ query }}" class="form-control"
+                        placeholder="Search posts...">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <select name="filter" class="form-select" onchange="this.form.submit()">
+                    <option value="">Filter by...</option>
+                    <option value="likes" {% if filter == 'likes' %}selected{% endif %}>Most Likes</option>
+                    <option value="comments" {% if filter == 'comments' %}selected{% endif %}>Most Comments</option>
+                    <option value="views" {% if filter == 'views' %}selected{% endif %}>Most Views</option>
+                </select>
+            </div>
+        </div>
+    </form>
+
+    {% if posts %}
+    {% for post in posts %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <p class="card-text">{{ post.content }}</p>
+            <p class="card-text">
+                <a href="#" class="view-details" data-type="views" data-post-id="{{ post.id }}">
+                    Views: <span class="badge bg-secondary">{{ post.n_views }}</span>
+                </a> |
+                <a href="#" class="view-details" data-type="likes" data-post-id="{{ post.id }}">
+                    Likes: <span class="badge bg-primary">{{ post.likes.count }}</span>
+                </a> |
+                <a href="#" class="view-details" data-type="comments" data-post-id="{{ post.id }}">
+                    Comments: <span class="badge bg-info">{{ post.comments.count }}</span>
+                </a>
+            </p>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-info">No posts available.</div>
+    {% endif %}
+</div>
+
+<!-- Modal for displaying details -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detailsModalLabel">Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailsModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Course Analytics Chart
+    const courseAnalyticsData = {{ course_analytics| safe }};
+    const courseLabels = courseAnalyticsData.map(item => item.user__course);
+    const courseData = courseAnalyticsData.map(item => item.post_count);
+
+    const courseAnalyticsChart = new Chart(
+        document.getElementById('courseAnalyticsChart'),
+        {
+            type: 'bar',
+            data: {
+                labels: courseLabels,
+                datasets: [{
+                    label: 'Posts',
+                    data: courseData,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }
+    );
+
+    // Handle clicks on views, likes, and comments
+    document.querySelectorAll('.view-details').forEach(item => {
+        item.addEventListener('click', event => {
+            event.preventDefault();
+            const type = event.currentTarget.dataset.type;
+            const postId = event.currentTarget.dataset.postId;
+
+            // Fetch details and show in modal
+            fetch(`/api/post/${postId}/${type}/`)
+                .then(response => response.json())
+                .then(data => {
+                    const modalBody = document.getElementById('detailsModalBody');
+                    modalBody.innerHTML = `<h6 class="mb-3">${type.charAt(0).toUpperCase() + type.slice(1)}</h6>`;
+                    data.forEach(item => {
+                        modalBody.innerHTML += `
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>${item.username}</span>
+                                <span class="badge bg-secondary">${item.count}</span>
+                            </div>`;
+                    });
+                    new bootstrap.Modal(document.getElementById('detailsModal')).show();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching the details.');
+                });
+        });
+    });
+</script>
+{% endblock %}

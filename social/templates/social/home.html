@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to JooustConnect</h1>
+    <p class="lead">Connect with fellow students, share ideas, and stay updated.</p>
+    <hr class="my-4">
+    <p>Join our community today!</p>
+    <a class="btn btn-primary btn-lg" href="{% url 'register' %}" role="button">Sign Up</a>
+    <a class="btn btn-secondary btn-lg" href="{% url 'login' %}" role="button">Log In</a>
+</div>
+{% endblock %}
