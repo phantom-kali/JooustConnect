@@ -1,17 +1,46 @@
 {% extends 'base.html' %}
 
+{% block title %}Groups - JouustConnect{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h1 class="mt-4">Groups</h1>
-    <div class="mb-4">
-        <a href="{% url 'create_group' %}" class="btn btn-primary">Create New Group</a>
-    </div>
-    <div class="list-group">
-        {% for group in groups %}
-        <a href="{% url 'group_messages' group.id %}" class="list-group-item list-group-item-action">
-            {{ group.name }}
-        </a>
-        {% endfor %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="mb-4">Groups</h2>
+
+        <form method="get" action="{% url 'groups' %}" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search groups" value="{{ query }}">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+
+        <a href="{% url 'create_group' %}" class="btn btn-success mb-4">Create New Group</a>
+
+        {% if groups %}
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for group in groups %}
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="{% url 'group_detail' group.id %}">{{ group.name }}</a></h5>
+                            <p class="card-text">{{ group.description|truncatewords:20 }}</p>
+                            <p class="card-text"><small class="text-muted">Members: {{ group.member_count }} | Visibility: {{ group.get_visibility_display }}</small></p>
+                            <p class="card-text"><small class="text-muted">Category: {{ group.category }}</small></p>
+                            <p class="card-text"><small class="text-muted">Tags: {{ group.tags }}</small></p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        {% else %}
+            <p>No groups found.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

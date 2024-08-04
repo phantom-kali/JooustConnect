@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card p-4" style="max-width: 600px; width: 100%;">
+        <h2 class="mb-4">Register</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Username Field -->
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                {% render_field form.username class="form-control" %}
+            </div>
+
+            <!-- Email Field -->
+            <div class="mb-3">
+                <label for="{{ form.email.id_for_label }}" class="form-label">Email address</label>
+                {% render_field form.email class="form-control" %}
+            </div>
+
+            <!-- Password Field -->
+            <div class="mb-3">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                {% render_field form.password class="form-control" %}
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="mb-3">
+                <label for="{{ form.confirm_password.id_for_label }}" class="form-label">Confirm Password</label>
+                {% render_field form.confirm_password class="form-control" %}
+            </div>
+
+            <!-- Password Strength Requirements -->
+            <div class="password-requirements mt-3">
+                <div class="password-requirement" data-pattern="(?=.*\d)">Contains a number</div>
+                <div class="password-requirement" data-pattern="(?=.*[a-z])">Contains a lowercase letter</div>
+                <div class="password-requirement" data-pattern="(?=.*[A-Z])">Contains an uppercase letter</div>
+                <div class="password-requirement" data-pattern="(?=.*[@$!%*?&])">Contains a special character</div>
+                <div class="password-requirement" data-pattern=".{8,}">At least 8 characters long</div>
+            </div>
+            <br>
+
+            <!-- Course Field -->
+            <div class="mb-3">
+                <label for="{{ form.course.id_for_label }}" class="form-label">Course</label>
+                {% render_field form.course class="form-control" %}
+            </div>
+
+            <!-- Year Field -->
+            <div class="mb-3">
+                <label for="{{ form.year.id_for_label }}" class="form-label">Year</label>
+                {% render_field form.year class="form-control" %}
+            </div>
+
+            <!-- Profile Picture Field -->
+            <div class="mb-3">
+                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                {% render_field form.profile_picture class="form-control" %}
+                <img id="profilePicPreview" src="#" alt="Profile Picture Preview" class="img-thumbnail mt-3"
+                    style="display: none; width: 150px; height: 150px; object-fit: cover;">
+            </div>
+
+            <!-- Bio Field -->
+            <div class="mb-3">
+                <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+                {% render_field form.bio class="form-control" %}
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Register</button>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript for password strength checking -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const passwordInput = document.querySelector('input[name="password"]');
+        const passwordRequirements = document.querySelectorAll('.password-requirement');
+
+        function checkPasswordStrength() {
+            const password = passwordInput.value;
+            passwordRequirements.forEach(requirement => {
+                const regex = new RegExp(requirement.dataset.pattern);
+                if (regex.test(password)) {
+                    requirement.classList.add('text-success');
+                    requirement.classList.remove('text-danger');
+                } else {
+                    requirement.classList.add('text-danger');
+                    requirement.classList.remove('text-success');
+                }
+            });
+        }
+
+        passwordInput.addEventListener('input', checkPasswordStrength);
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const profilePicInput = document.querySelector('input[name="profile_picture"]');
+        const profilePicPreview = document.getElementById('profilePicPreview');
+
+        profilePicInput.addEventListener('change', function () {
+            const file = profilePicInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    profilePicPreview.src = e.target.result;
+                    profilePicPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                profilePicPreview.style.display = 'none';
+            }
+        });
+    });
+
+</script>
+
+<!-- CSS for password requirements feedback -->
+<style>
+    #profilePicPreview {
+        border-radius: 50%;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+    }
+
+    .password-requirement {
+        margin-bottom: 5px;
+    }
+
+    .password-requirement.text-success {
+        color: green;
+    }
+
+    .password-requirement.text-danger {
+        color: red;
+    }
+</style>
+{% endblock %}

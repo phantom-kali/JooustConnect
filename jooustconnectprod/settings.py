@@ -5,9 +5,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-$k29@3^!r6@#+#)heu)_$$by$70)!dou!e_8m^o^2nxnf41npg'
 
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['jooustconnect.co.ke', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['jooustconnect.co.ke', 'localhost', '127.0.0.1', '192.168.122.68']
 
 CSRF_TRUSTED_ORIGINS = ['https://jooustconnect.co.ke', 'http://localhost']
 
@@ -43,7 +43,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    # 'socialapp.middleware.CrossOriginOpenerPolicyMiddleware',
 ]
 
 ROOT_URLCONF = 'jooustconnectprod.urls'
