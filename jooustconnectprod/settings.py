@@ -3,18 +3,17 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-$k29@3^!r6@#+#)heu)_$$by$70)!dou!e_8m^o^2nxnf41npg'
+# change this
+SECRET_KEY = 'django-insecure-$k29@3^!r6@#+#)heu)_$$by$70)!dou!e_8m^o^2nxnf41npx'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['jooustconnect.co.ke', 'localhost', '127.0.0.1', '192.168.122.68']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-CSRF_TRUSTED_ORIGINS = ['https://jooustconnect.co.ke', 'http://localhost']
+CSRF_TRUSTED_ORIGINS = ['http://localhost']
 
 CORS_ALLOWED_ORIGINS = [
-    'https://jooustconnect.co.ke',
     'http://localhost',
-    'http://192.168.122.68',
 ]
 
 INSTALLED_APPS = [
