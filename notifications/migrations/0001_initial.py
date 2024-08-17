@@ -15,6 +15,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+<<<<<<< HEAD
             name="Notification",
             fields=[
                 (
@@ -36,6 +37,15 @@ class Migration(migrations.Migration):
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
+=======
+            name='Notification',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('content', models.CharField(max_length=255)),
+                ('is_read', models.BooleanField(default=False)),
+                ('timestamp', models.DateTimeField(auto_now_add=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
             ],
         ),
     ]

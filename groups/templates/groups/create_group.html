@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+<<<<<<< HEAD
 {% load widget_tweaks %}
 {% load static %}
 
@@ -41,11 +42,58 @@
                     </form>
                 </div>
             </div>
+=======
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-3xl">
+    <div class="bg-gray-800 shadow-lg rounded-lg overflow-hidden">
+        <div class="p-6 md:p-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-center mb-6 text-gray-100">Create New Group</h1>
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="space-y-2">
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-300">
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <p class="text-red-400 text-xs italic">{{ field.errors|striptags }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <div class="text-center">
+                    <button type="submit" class="w-full md:w-auto px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition duration-150 ease-in-out">
+                        Create Group
+                    </button>
+                </div>
+            </form>
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
         </div>
     </div>
 </div>
 {% endblock %}
 
+<<<<<<< HEAD
 {% block extra_js %}
 <script src="{% static 'js/groups.js' %}"></script>
+=======
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+    /* Custom styles for form inputs in dark mode */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+        @apply bg-gray-700 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500;
+    }
+    /* Adjust placeholder color */
+    ::placeholder {
+        @apply text-gray-400;
+    }
+</style>
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 {% endblock %}

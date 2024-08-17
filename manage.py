@@ -12,4 +12,8 @@ if __name__ == "__main__":
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+<<<<<<< HEAD
     execute_from_command_line(sys.argv)
+=======
+    execute_from_command_line(sys.argv)
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c

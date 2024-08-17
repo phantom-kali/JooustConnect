@@ -1,6 +1,7 @@
 from django import forms
 from .models import Group, GroupPost
 
+<<<<<<< HEAD
 
 class GroupForm(forms.ModelForm):
     class Meta:
@@ -39,3 +40,17 @@ class GroupPostForm(forms.ModelForm):
         for field in self.fields.values():
             if "class" not in field.widget.attrs:
                 field.widget.attrs["class"] = "form-control-dark"
+=======
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['name', 'description', 'visibility', 'category', 'tags']
+        widgets = {
+            'tags': forms.TextInput(attrs={'placeholder': 'Enter tags separated by commas'}),
+        }
+
+class GroupPostForm(forms.ModelForm):
+    class Meta:
+        model = GroupPost
+        fields = ['content']
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c

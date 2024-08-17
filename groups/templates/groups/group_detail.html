@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+<<<<<<< HEAD
 {% load static %}
 
 {% block title %}{{ group.name }} - JouustConnect{% endblock %}
@@ -104,4 +105,65 @@
 
 {% block extra_js %}
 <script src="{% static 'js/groups.js' %}"></script>
+=======
+
+{% block title %}{{ group.name }} - JouustConnect{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <h2 class="mb-4">{{ group.name }}</h2>
+        <p>{{ group.description }}</p>
+        <p><strong>Visibility:</strong> {{ group.get_visibility_display }}</p>
+        <p><strong>Category:</strong> {{ group.category }}</p>
+        <p><strong>Tags:</strong> {{ group.tags }}</p>
+
+        <div class="mb-4">
+            {% if is_member %}
+                <a href="{% url 'leave_group' group.id %}" class="btn btn-warning">Leave Group</a>
+                <a href="{% url 'group_messages' group.id %}" class="btn btn-primary">Group Chat</a>
+            {% else %}
+                <a href="{% url 'join_group' group.id %}" class="btn btn-success">Join Group</a>
+            {% endif %}
+
+            {% if is_admin %}
+                <a href="{% url 'manage_group_requests' group.id %}" class="btn btn-info">Manage Group</a>
+            {% endif %}
+        </div>
+
+        {% if is_member %}
+            <h3 class="mb-3">Invite Member</h3>
+            <form method="post" action="{% url 'invite_to_group' group.id %}" class="mb-4">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="text" name="username" class="form-control" placeholder="Enter username">
+                    <button type="submit" class="btn btn-primary">Invite</button>
+                </div>
+            </form>
+
+            <h3 class="mb-3">Create a Post</h3>
+            <form method="post" action="{% url 'add_group_post' group.id %}" class="mb-4">
+                {% csrf_token %}
+                {{ post_form.as_p }}
+                <button type="submit" class="btn btn-primary">Post</button>
+            </form>
+
+            <h3 class="mb-3">Group Posts</h3>
+            {% if posts %}
+                {% for post in posts %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ post.user.username }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ post.created_at }}</h6>
+                            <p class="card-text">{{ post.content }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No posts yet.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 {% endblock %}

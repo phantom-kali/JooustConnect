@@ -11,6 +11,12 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+<<<<<<< HEAD
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jooustconnectprod.settings")
 
 application = get_wsgi_application()
+=======
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'jooustconnectprod.settings')
+
+application = get_wsgi_application()
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c

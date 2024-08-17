@@ -6,7 +6,11 @@ from django.contrib import messages
 
 from notifications.models import Notification
 from users.models import User
+<<<<<<< HEAD
 from .models import Group, GroupJoinRequest, GroupMessage, GroupPost
+=======
+from .models import Group, GroupJoinRequest, GroupMessage
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 from .forms import GroupForm, GroupPostForm
 from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404
@@ -21,10 +25,13 @@ from django.db.models import Q, Count
 from .models import Group, GroupJoinRequest
 from .forms import GroupForm, GroupPostForm
 
+<<<<<<< HEAD
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch
 from django.views.decorators.cache import cache_page
 
+=======
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 
 class MessageEncoder(DjangoJSONEncoder):
     def default(self, obj):
@@ -43,6 +50,7 @@ def delete_group(request, group_id):
     group = get_object_or_404(Group, id=group_id)
     if request.user != group.admins.first():  # Only the creator can delete the group
         messages.error(request, "You don't have permission to delete this group.")
+<<<<<<< HEAD
         return redirect("group_detail", group_id=group.id)
 
     if request.method == "POST":
@@ -52,14 +60,29 @@ def delete_group(request, group_id):
 
     return render(request, "groups/delete_group.html", {"group": group})
 
+=======
+        return redirect('group_detail', group_id=group.id)
+    
+    if request.method == 'POST':
+        group.delete()
+        messages.success(request, f"Group '{group.name}' has been deleted.")
+        return redirect('groups')
+    
+    return render(request, 'groups/delete_group.html', {'group': group})
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 
 @login_required
 def remove_member(request, group_id, user_id):
     group = get_object_or_404(Group, id=group_id)
     if request.user not in group.admins.all():
         messages.error(request, "You don't have permission to remove members.")
+<<<<<<< HEAD
         return redirect("group_detail", group_id=group.id)
 
+=======
+        return redirect('group_detail', group_id=group.id)
+    
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
     user_to_remove = get_object_or_404(User, id=user_id)
     if user_to_remove == group.admins.first():
         messages.error(request, "You can't remove the group creator.")
@@ -67,6 +90,7 @@ def remove_member(request, group_id, user_id):
         group.members.remove(user_to_remove)
         if user_to_remove in group.admins.all():
             group.admins.remove(user_to_remove)
+<<<<<<< HEAD
         messages.success(
             request, f"{user_to_remove.username} has been removed from the group."
         )
@@ -77,16 +101,30 @@ def remove_member(request, group_id, user_id):
 
     return redirect("manage_group_requests", group_id=group.id)
 
+=======
+        messages.success(request, f"{user_to_remove.username} has been removed from the group.")
+    else:
+        messages.error(request, f"{user_to_remove.username} is not a member of this group.")
+    
+    return redirect('manage_group_requests', group_id=group.id)
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 
 @login_required
 def invite_to_group(request, group_id):
     group = get_object_or_404(Group, id=group_id)
     if request.user not in group.members.all():
         messages.error(request, "You don't have permission to invite members.")
+<<<<<<< HEAD
         return redirect("groups")
 
     if request.method == "POST":
         username = request.POST.get("username")
+=======
+        return redirect('groups')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
         try:
             user_to_invite = User.objects.get(username=username)
             if user_to_invite not in group.members.all():
@@ -98,6 +136,7 @@ def invite_to_group(request, group_id):
                 messages.info(request, f"{username} is already a member of this group.")
         except User.DoesNotExist:
             messages.error(request, f"User {username} not found.")
+<<<<<<< HEAD
 
     return redirect("group_detail", group_id=group.id)
 
@@ -148,6 +187,44 @@ def groups(request):
         "selected_category": category,
     }
     return render(request, "groups/groups.html", context)
+=======
+    
+    return redirect('group_detail', group_id=group.id)
+
+# Update the groups view to include private groups for members
+@login_required
+def groups(request):
+    query = request.GET.get('q')
+    category = request.GET.get('category')
+    
+    groups = Group.objects.filter(
+        Q(visibility='public') | 
+        Q(members=request.user) | 
+        Q(admins=request.user)
+    ).distinct()
+    
+    if query:
+        groups = groups.filter(
+            Q(name__icontains=query) | 
+            Q(description__icontains=query) | 
+            Q(tags__icontains=query)
+        )
+    
+    if category:
+        groups = groups.filter(category=category)
+    
+    groups = groups.annotate(member_count=Count('members'))
+    
+    categories = Group.objects.values_list('category', flat=True).distinct()
+    
+    context = {
+        'groups': groups,
+        'categories': categories,
+        'query': query,
+        'selected_category': category,
+    }
+    return render(request, 'groups/groups.html', context)
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 
 
 @login_required
@@ -168,6 +245,7 @@ def create_group(request):
 @login_required
 def group_detail(request, group_id):
     group = get_object_or_404(Group, id=group_id)
+<<<<<<< HEAD
 
     if group.visibility == "secret" and request.user not in group.members.all():
         return redirect("groups")
@@ -191,6 +269,30 @@ def group_detail(request, group_id):
     }
     return render(request, "groups/group_detail.html", context)
 
+=======
+    
+    if group.visibility == 'secret' and request.user not in group.members.all():
+        return redirect('groups')
+    
+    is_member = request.user in group.members.all()
+    is_admin = request.user in group.admins.all()
+    can_view = group.visibility == 'public' or is_member
+    
+    if not can_view:
+        return redirect('groups')
+    
+    posts = group.posts.all().order_by('-created_at') if is_member else []
+    post_form = GroupPostForm() if is_member else None
+    
+    context = {
+        'group': group,
+        'posts': posts,
+        'post_form': post_form,
+        'is_member': is_member,
+        'is_admin': is_admin,
+    }
+    return render(request, 'groups/group_detail.html', context)
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 
 @login_required
 def join_group(request, group_id):
@@ -219,6 +321,7 @@ def leave_group(request, group_id):
 def manage_group_requests(request, group_id):
     group = get_object_or_404(Group, id=group_id)
     if request.user not in group.admins.all():
+<<<<<<< HEAD
         return redirect("groups")
 
     join_requests = group.join_requests.all()
@@ -264,6 +367,45 @@ def manage_group_requests(request, group_id):
         "admins": group.admins.all(),
     }
     return render(request, "groups/manage_requests.html", context)
+=======
+        return redirect('groups')
+    
+    join_requests = group.join_requests.all()
+    members = group.members.all()
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action in ['approve', 'reject']:
+            request_id = request.POST.get('request_id')
+            join_request = get_object_or_404(GroupJoinRequest, id=request_id, group=group)
+            
+            if action == 'approve':
+                group.members.add(join_request.user)
+                join_request.delete()
+            elif action == 'reject':
+                join_request.delete()
+        
+        elif action == 'promote':
+            user_id = request.POST.get('user_id')
+            user_to_promote = get_object_or_404(User, id=user_id)
+            if user_to_promote in group.members.all() and user_to_promote not in group.admins.all():
+                group.admins.add(user_to_promote)
+        
+        elif action == 'demote':
+            user_id = request.POST.get('user_id')
+            user_to_demote = get_object_or_404(User, id=user_id)
+            if user_to_demote in group.admins.all() and user_to_demote != group.admins.first():  # Prevent demoting the original creator
+                group.admins.remove(user_to_demote)
+    
+    context = {
+        'group': group,
+        'join_requests': join_requests,
+        'members': members,
+        'admins': group.admins.all(),
+    }
+    return render(request, 'groups/manage_requests.html', context)
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
 
 
 @login_required

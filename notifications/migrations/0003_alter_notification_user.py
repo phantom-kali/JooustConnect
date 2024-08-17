@@ -9,11 +9,16 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+<<<<<<< HEAD
         ("notifications", "0002_notification_notification_type_and_more"),
+=======
+        ('notifications', '0002_notification_notification_type_and_more'),
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
     ]
 
     operations = [
         migrations.AlterField(
+<<<<<<< HEAD
             model_name="notification",
             name="user",
             field=models.ForeignKey(
@@ -21,5 +26,10 @@ class Migration(migrations.Migration):
                 related_name="notifications",
                 to=settings.AUTH_USER_MODEL,
             ),
+=======
+            model_name='notification',
+            name='user',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to=settings.AUTH_USER_MODEL),
+>>>>>>> 20d5f52ef1d7d03304aa3abc20f5e37cc8590b2c
         ),
     ]
