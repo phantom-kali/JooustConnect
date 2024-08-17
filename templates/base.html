@@ -9,7 +9,11 @@
     <title>JooustConnect</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <!-- <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon"> -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
+    <link rel="manifest" href="{% static 'images/site.webmanifest' %}">
     <style>
         body {
             padding-bottom: 60px;
@@ -21,28 +25,29 @@
         }
 
         :root {
-            --bg-color: #ffffff;
-            --text-color: #212529;
-            --navbar-bg: #0d6efd;
-            --navbar-color: #ffffff;
+            /* Default light theme */
+            --bg-color: #f0f2f5;
+            --text-color: #1c1e21;
+            --navbar-bg: #ffffff;
+            --navbar-color: #1c1e21;
             --card-bg: #ffffff;
-            --card-border: #dee2e6;
-            --input-bg: #ffffff;
-            --input-color: #212529;
-            --input-border: #ced4da;
+            --card-border: #dddfe2;
+            --input-bg: #f0f2f5;
+            --input-color: #1c1e21;
+            --input-border: #ccd0d5;
             --btn-close-filter: none;
         }
 
         .dark-theme {
-            --bg-color: #212529;
-            --text-color: #f8f9fa;
-            --navbar-bg: #343a40;
-            --navbar-color: #ffffff;
-            --card-bg: #343a40;
-            --card-border: #454d55;
-            --input-bg: #495057;
-            --input-color: #f8f9fa;
-            --input-border: #6c757d;
+            --bg-color: #18191a;
+            --text-color: #e4e6eb;
+            --navbar-bg: #242526;
+            --navbar-color: #e4e6eb;
+            --card-bg: #242526;
+            --card-border: #3a3b3c;
+            --input-bg: #3a3b3c;
+            --input-color: #e4e6eb;
+            --input-border: #4e4f50;
             --btn-close-filter: invert(1);
         }
 
@@ -348,10 +353,10 @@
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     {% block extra_css %}{% endblock %}
+    <script src="{% static 'js/theme.js' %}"></script>
 </head>
 
-<body>
-    <div class="main-container">
+<body class="{% if request.session.theme == 'dark' %}dark-theme{% endif %}">    <div class="main-container">
         <!-- Sidebar for larger screens -->
         <div class="sidebar">
             <nav>
@@ -404,6 +409,22 @@
                             <span>Groups</span>
                         </a>
                     </li>
+                    {% if is_premium %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'premium_dashboard' %}">
+                            <i class="fas fa-crown"></i>
+                            <span>Premium Dashboard</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'purchase_premium' %}">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Purchase Premium</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
                     {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">
@@ -491,6 +512,22 @@
                         <span>Profile</span>
                     </a>
                 </li>
+                {% if is_premium %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'premium_dashboard' %}">
+                        <i class="fas fa-crown"></i>
+                        <span>Premium Dashboard</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'purchase_premium' %}">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Purchase Premium</span>
+                    </a>
+                </li>
+                {% endif %}
+
                 {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'login' %}">
@@ -514,117 +551,122 @@
         <a href="#" class="closebtn" id="closeSideNav">&times;</a>
         <a href="{% url 'settings' %}"><i class="fas fa-cog"></i> Settings</a>
         <a href="{% url 'groups' %}"><i class="fas fa-users"></i> Groups</a>
-    </div>
+        {% if is_premium %}
+        <a href="{% url 'premium_dashboard' %}"><i class="fas fa-crown"></i> Premium Dashboard</a>
+        {% else %}
+        <a href="{% url 'purchase_premium' %}"><i class="fas fa-shopping-cart"></i> Purchase Premium</a>
+        {% endif %}
 
-    <!-- Bootstrap JS and Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+        <!-- Bootstrap JS and Popper.js -->
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const darkModeToggle = document.getElementById('darkModeToggle');
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                function setTheme(theme) {
+                    if (theme === 'dark') {
+                        document.body.classList.add('dark-theme');
+                    } else {
+                        document.body.classList.remove('dark-theme');
+                    }
+                    localStorage.setItem('theme', theme);
+                }
 
-            function setDarkMode(isDark) {
-                if (isDark) {
-                    document.body.classList.add('dark-theme');
-                    darkModeToggle.checked = true;
+                function applyTheme(theme) {
+                    if (theme === 'system') {
+                        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                            setTheme('dark');
+                        } else {
+                            setTheme('light');
+                        }
+                    } else {
+                        setTheme(theme);
+                    }
+                }
+
+                // Apply theme on page load
+                const savedTheme = localStorage.getItem('theme') || '{% if user.is_authenticated %}{{ user.theme_preference }}{% else %}system{% endif %}';
+                applyTheme(savedTheme);
+
+                // Listen for changes in color scheme preference
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                    if (savedTheme === 'system') {
+                        applyTheme('system');
+                    }
+                });
+            });
+
+            // Add scroll behavior for navbar
+            let lastScrollTop = 0;
+            const navbar = document.querySelector('.navbar');
+            const body = document.body;
+            const html = document.documentElement;
+
+            window.addEventListener('scroll', function () {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                let scrollHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+                let clientHeight = html.clientHeight;
+
+                if (scrollTop > lastScrollTop && scrollTop + clientHeight < scrollHeight - 10) {
+                    // Scrolling down and not at the bottom
+                    navbar.classList.add('navbar-hidden');
                 } else {
-                    document.body.classList.remove('dark-theme');
-                    darkModeToggle.checked = false;
+                    // Scrolling up or at the bottom
+                    navbar.classList.remove('navbar-hidden');
                 }
-                localStorage.setItem('darkMode', isDark);
-            }
-
-            // Check for saved theme preference or prefer-color-scheme
-            const savedTheme = localStorage.getItem('darkMode');
-            if (savedTheme !== null) {
-                setDarkMode(savedTheme === 'true');
-            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                setDarkMode(true);
-            }
-
-            // Add event listener for toggle switch
-            darkModeToggle.addEventListener('change', function () {
-                setDarkMode(this.checked);
+                lastScrollTop = scrollTop;
             });
 
-            // Listen for changes in color scheme preference
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-                setDarkMode(e.matches);
-            });
-        });
 
-        // Add scroll behavior for navbar
-        let lastScrollTop = 0;
-        const navbar = document.querySelector('.navbar');
-        const body = document.body;
-        const html = document.documentElement;
+            // Side navbar functionality
+            document.addEventListener('DOMContentLoaded', function () {
+                const sideNavbar = document.getElementById('sideNavbar');
+                const closeSideNav = document.getElementById('closeSideNav');
 
-        window.addEventListener('scroll', function () {
-            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            let scrollHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
-            let clientHeight = html.clientHeight;
-
-            if (scrollTop > lastScrollTop && scrollTop + clientHeight < scrollHeight - 10) {
-                // Scrolling down and not at the bottom
-                navbar.classList.add('navbar-hidden');
-            } else {
-                // Scrolling up or at the bottom
-                navbar.classList.remove('navbar-hidden');
-            }
-            lastScrollTop = scrollTop;
-        });
-
-
-        // Side navbar functionality
-        document.addEventListener('DOMContentLoaded', function () {
-            const sideNavbar = document.getElementById('sideNavbar');
-            const closeSideNav = document.getElementById('closeSideNav');
-
-            closeSideNav.addEventListener('click', function () {
-                sideNavbar.style.width = '0';
-            });
-
-            // Swipe to open side navbar
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            document.addEventListener('touchstart', function (event) {
-                touchStartX = event.changedTouches[0].screenX;
-            }, false);
-
-            document.addEventListener('touchend', function (event) {
-                touchEndX = event.changedTouches[0].screenX;
-                handleSwipe();
-            }, false);
-
-            function handleSwipe() {
-                if (touchEndX - touchStartX > 50 && touchStartX < 50) {
-                    sideNavbar.style.width = '250px';
-                }
-            }
-
-            // Close the side navbar if the user clicks outside of it
-            document.addEventListener('click', function (event) {
-                if (!sideNavbar.contains(event.target) && sideNavbar.style.width !== '0px') {
+                closeSideNav.addEventListener('click', function () {
                     sideNavbar.style.width = '0';
+                });
+
+                // Swipe to open side navbar
+                let touchStartX = 0;
+                let touchEndX = 0;
+
+                document.addEventListener('touchstart', function (event) {
+                    touchStartX = event.changedTouches[0].screenX;
+                }, false);
+
+                document.addEventListener('touchend', function (event) {
+                    touchEndX = event.changedTouches[0].screenX;
+                    handleSwipe();
+                }, false);
+
+                function handleSwipe() {
+                    if (touchEndX - touchStartX > 50 && touchStartX < 50) {
+                        sideNavbar.style.width = '250px';
+                    }
+                }
+
+                // Close the side navbar if the user clicks outside of it
+                document.addEventListener('click', function (event) {
+                    if (!sideNavbar.contains(event.target) && sideNavbar.style.width !== '0px') {
+                        sideNavbar.style.width = '0';
+                    }
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const bell = document.querySelector('.notification-bell');
+                const count = parseInt(document.querySelector('.notification-count').textContent);
+                if (count > 0) {
+                    bell.classList.add('ringing');
                 }
             });
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const bell = document.querySelector('.notification-bell');
-            const count = parseInt(document.querySelector('.notification-count').textContent);
-            if (count > 0) {
-                bell.classList.add('ringing');
-            }
-        });
 
 
-    </script>
+        </script>
 
-    {% block extra_js %}
-    {% endblock %}
+        {% block extra_js %}
+        {% endblock %}
 </body>
 
 </html>

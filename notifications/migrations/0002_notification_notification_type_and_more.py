@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('notifications', '0001_initial'),
+        ("notifications", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='notification',
-            name='notification_type',
-            field=models.CharField(choices=[('DM', 'Direct Message'), ('GROUP', 'Group Message')], default='DM', max_length=5),
+            model_name="notification",
+            name="notification_type",
+            field=models.CharField(
+                choices=[("DM", "Direct Message"), ("GROUP", "Group Message")],
+                default="DM",
+                max_length=5,
+            ),
         ),
         migrations.AddField(
-            model_name='notification',
-            name='related_id',
+            model_name="notification",
+            name="related_id",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),

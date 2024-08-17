@@ -4,6 +4,6 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 from django.conf import settings
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'jooustconnectprod.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jooustconnectprod.settings")
 
 django_asgi_app = get_asgi_application()

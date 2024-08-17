@@ -1,6 +1,7 @@
 from django import forms
 from .models import User
 
+
 class UserRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput)
@@ -8,19 +9,28 @@ class UserRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'nickname', 'course', 'year', 'profile_picture', 'bio', 'password']
+        fields = [
+            "username",
+            "email",
+            "nickname",
+            "course",
+            "year",
+            "profile_picture",
+            "bio",
+            "password",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['course'].required = True
-        self.fields['year'].required = True
-        
+        self.fields["course"].required = True
+        self.fields["year"].required = True
+
         # Suppress help texts
         for field in self.fields.values():
-            field.help_text = ''
-        
+            field.help_text = ""
+
         # Set bio field to use TextInput widget
-        self.fields['bio'].widget = forms.TextInput(attrs={'placeholder': 'Your about'})
+        self.fields["bio"].widget = forms.TextInput(attrs={"placeholder": "Your about"})
 
     def clean(self):
         cleaned_data = super().clean()
@@ -34,13 +44,21 @@ class UserRegistrationForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['nickname', 'course', 'year', 'bio', 'privacy_dms', 'privacy_posts', 'profile_picture']
+        fields = ["nickname", "course", "year", "bio", "profile_picture"]
         widgets = {
-            'nickname': forms.TextInput(attrs={'class': 'form-control'}),
-            'course': forms.TextInput(attrs={'class': 'form-control'}),
-            'year': forms.TextInput(attrs={'class': 'form-control'}),
-            'bio': forms.Textarea(attrs={'class': 'form-control'}),
-            'privacy_dms': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'privacy_posts': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            "nickname": forms.TextInput(attrs={"class": "form-control"}),
+            "course": forms.TextInput(attrs={"class": "form-control"}),
+            "year": forms.TextInput(attrs={"class": "form-control"}),
+            "bio": forms.Textarea(attrs={"class": "form-control"}),
         }
 
+
+class UserSettingsForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["theme_preference", "privacy_dms", "privacy_posts"]
+        widgets = {
+            "theme_preference": forms.RadioSelect(),
+            "privacy_dms": forms.CheckboxInput(),
+            "privacy_posts": forms.CheckboxInput(),
+        }

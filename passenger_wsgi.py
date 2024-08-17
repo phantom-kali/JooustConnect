@@ -7,8 +7,7 @@ from django.core.wsgi import get_wsgi_application
 sys.path.insert(0, os.path.dirname(__file__))
 
 # Set the default settings module
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'jooustconnectprod.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "jooustconnectprod.settings")
 
 # Import the Django WSGI application
 application = get_wsgi_application()
-

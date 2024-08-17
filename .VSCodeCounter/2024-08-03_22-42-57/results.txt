@@ -1,0 +1,43 @@
+Date : 2024-08-03 22:42:57
+Directory : /home/fidel/Websites/jooustconnectprod/social
+Total : 14 files,  858 codes, 6 comments, 128 blanks, all 992 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| HTML     |          4 |        573 |          2 |         67 |        642 |
+| Python   |         10 |        285 |          4 |         61 |        350 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                             | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                |         14 |        858 |          6 |        128 |        992 |
+| . (Files)                                                                        |          8 |        226 |          3 |         53 |        282 |
+| migrations                                                                       |          2 |         59 |          1 |          8 |         68 |
+| templates                                                                        |          4 |        573 |          2 |         67 |        642 |
+| templates/social                                                                 |          4 |        573 |          2 |         67 |        642 |
++----------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                                         | language | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| /home/fidel/Websites/jooustconnectprod/social/__init__.py                        | Python   |          0 |          0 |          1 |          1 |
+| /home/fidel/Websites/jooustconnectprod/social/admin.py                           | Python   |         29 |          0 |          8 |         37 |
+| /home/fidel/Websites/jooustconnectprod/social/apps.py                            | Python   |          4 |          0 |          3 |          7 |
+| /home/fidel/Websites/jooustconnectprod/social/forms.py                           | Python   |         11 |          0 |          1 |         12 |
+| /home/fidel/Websites/jooustconnectprod/social/migrations/0001_initial.py         | Python   |         59 |          1 |          7 |         67 |
+| /home/fidel/Websites/jooustconnectprod/social/migrations/__init__.py             | Python   |          0 |          0 |          1 |          1 |
+| /home/fidel/Websites/jooustconnectprod/social/models.py                          | Python   |         45 |          0 |         10 |         55 |
+| /home/fidel/Websites/jooustconnectprod/social/templates/social/feed.html         | HTML     |        458 |          1 |         50 |        509 |
+| /home/fidel/Websites/jooustconnectprod/social/templates/social/home.html         | HTML     |         11 |          0 |          1 |         12 |
+| /home/fidel/Websites/jooustconnectprod/social/templates/social/post_create.html  | HTML     |         83 |          0 |         12 |         95 |
+| /home/fidel/Websites/jooustconnectprod/social/templates/social/post_viewers.html | HTML     |         21 |          1 |          4 |         26 |
+| /home/fidel/Websites/jooustconnectprod/social/tests.py                           | Python   |          1 |          1 |          2 |          4 |
+| /home/fidel/Websites/jooustconnectprod/social/urls.py                            | Python   |         14 |          0 |          1 |         15 |
+| /home/fidel/Websites/jooustconnectprod/social/views.py                           | Python   |        122 |          2 |         27 |        151 |
+| Total                                                                            |          |        858 |          6 |        128 |        992 |
++----------------------------------------------------------------------------------+----------+------------+------------+------------+------------+
